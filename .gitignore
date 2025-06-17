@@ -1,0 +1,52 @@
+# === Visual Studio ===
+.vscode/
+.vs/
+*.user
+*.suo
+*.VC.db
+*.VC.VC.opendb
+*.ncb
+*.log
+
+# === CMake ===
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+build/
+*.cmake
+
+# === Build outputs ===
+Debug/
+Release/
+x64/
+x86/
+*.exe
+*.dll
+*.lib
+*.obj
+*.pdb
+
+# === SFML or other libs ===
+*.dll
+*.lib
+
+# === Temporary files ===
+*.tmp
+*.bak
+*.swp
+*.cache
+*.db
+*.ipch
+*.tlog
+*.opensdf
+
+# === IDE specific ===
+.idea/
+*.code-workspace
+
+# === Archives or other ===
+*.zip
+*.tar.gz
+*.7z
+*.rar
