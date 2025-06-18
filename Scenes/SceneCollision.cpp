@@ -8,8 +8,7 @@ void SceneCollision::Init()
 	circle1->cShape = std::make_shared<CCircle>(1.f);
 	circle1->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::KINEMATIC);
 	circle1->cRigidbody->m_velocity = Vec2(3, 0);
-	circle1->cCollider = std::make_shared<CCollider>(CCollider::Type::Circle);
-	circle1->cCollider->m_radius = 1.0f;
+	circle1->cCollider = std::make_shared<CCircleCollider>(1.0f);
 	circle1->cCollisionState = std::make_shared<CCollisionState>();
 
 	auto circle2 = m_entityManager.AddEntity("Circle");
@@ -17,8 +16,7 @@ void SceneCollision::Init()
 	circle2->cShape = std::make_shared<CCircle>(1.f);
 	circle2->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::KINEMATIC);
 	circle2->cRigidbody->m_velocity = Vec2(-3, 0);
-	circle2->cCollider = std::make_shared<CCollider>(CCollider::Type::Circle);
-	circle2->cCollider->m_radius = 1.0f;
+	circle2->cCollider = std::make_shared<CCircleCollider>(1.0f);
 	circle2->cCollisionState = std::make_shared<CCollisionState>();
 }
 
