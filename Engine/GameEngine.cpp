@@ -2,6 +2,7 @@
 
 #include "GameEngine.h"
 #include "../Scenes/SceneGravity.h"
+#include "../Scenes/SceneCollision.h"
 
 GameEngine::GameEngine() : m_window(sf::VideoMode({ 800, 600 }), "SebF2DEngine"), m_currentFrame(0)
 {
@@ -24,6 +25,10 @@ void GameEngine::ChangeScene(const std::string& name)
 	{
 		m_currentScene = std::make_shared<SceneGravity>(this);
 	}
+	else if (name == "SceneCollision")
+	{
+		m_currentScene = std::make_shared<SceneCollision>(this);
+	}
 
 	m_currentScene->Init();
 }
@@ -44,11 +49,6 @@ void GameEngine::Run()
 
 void GameEngine::ProcessEvents()
 {
-	while (const std::optional event = m_window.pollEvent())
-	{
-		if (event->is<sf::Event::Closed>())
-			m_window.close();
-	}
 	if (m_currentScene)
 	{
 		m_currentScene->ProcessInput(m_window);

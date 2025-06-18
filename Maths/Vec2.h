@@ -23,6 +23,7 @@ public:
 		y -= rhs.y;
 		return *this;
 	}
+	Vec2 operator/(float scalar) const { return { x / scalar, y / scalar }; };
 	float Length() const { return sqrt(x * x + y * y); }
 	float SquaredLength() const { return x * x + y * y; }
 	Vec2 Normalized() const {
