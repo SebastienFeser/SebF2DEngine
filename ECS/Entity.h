@@ -7,6 +7,7 @@
 #include "../Game/CRigidbody.h"
 #include "../Game/CShape.h"
 #include "../Game/CCollider.h"
+#include "../Game/CCollisionState.h"
 
 class Entity {
 	const size_t m_id = 0;
@@ -17,6 +18,7 @@ public:
 	std::shared_ptr<CRigidbody> cRigidbody;
 	std::shared_ptr<CShape> cShape;
 	std::shared_ptr<CCollider> cCollider;
+	std::shared_ptr<CCollisionState> cCollisionState;
 	Entity(const std::string& tag, size_t id);
 	void Destroy() { m_alive = false; }
 	std::string GetTag() const;
