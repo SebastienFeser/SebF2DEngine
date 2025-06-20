@@ -1,9 +1,59 @@
-#include "SceneCollision.h"
+#include "SceneNoQuadTree.h"
 #include "../Physics/PhysicsConstants.h"
+#include "../Config/GameConfig.h"
+#include <random>
 
-void SceneCollision::Init()
+Vec2 RandomPosition()
 {
-	auto circle1 = m_entityManager.AddEntity("Circle");
+	float minX = 0;
+	float maxX = GameConfig::SCREEN_WIDTH;
+	float minY = 0;
+	float maxY = GameConfig::SCREEN_HEIGHT;
+	float x = minX + static_cast<float>(rand()) / RAND_MAX * (maxX - minX);
+	float y = minY + static_cast<float>(rand()) / RAND_MAX * (maxY - minY);
+
+	return Vec2(x, y);
+}
+
+Vec2 RandomScale()
+{
+	float minX = 10;
+	float maxX = 30;
+	float minY = 10;
+	float maxY = 30;
+	float x = minX + static_cast<float>(rand()) / RAND_MAX * (maxX - minX);
+	float y = minY + static_cast<float>(rand()) / RAND_MAX * (maxY - minY);
+
+	return Vec2(x, y);
+}
+
+Vec2 RandomVelocity()
+{
+	float minX = -20.0f;
+	float maxX = 20.0f;
+	float minY = -20.0f;
+	float maxY = 20.0f;
+	float x = minX + static_cast<float>(rand()) / RAND_MAX * (maxX - minX);
+	float y = minY + static_cast<float>(rand()) / RAND_MAX * (maxY - minY);
+
+	return Vec2(x, y);
+}
+
+void SceneNoQuadTree::Init()
+{
+	std::srand(std::time(nullptr));
+	for (int i = 0; i < m_aabbCount; i++)
+	{
+		auto rectangle = m_entityManager.AddEntity("OrientedRectangle");
+		rectangle->cTransform = std::make_shared<CTransform>(RandomPosition());
+		Vec2 randomScale = RandomScale();
+		rectangle->cShape = std::make_shared<COrientedRectangle>(randomScale);
+		rectangle->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::KINEMATIC);
+		rectangle->cRigidbody->m_velocity = RandomVelocity();
+		rectangle->cCollider = std::make_shared<CAABBCollider>(randomScale);
+		rectangle->cCollisionState = std::make_shared<CCollisionState>();
+	}
+	/*auto circle1 = m_entityManager.AddEntity("Circle");
 	circle1->cTransform = std::make_shared<CTransform>(Vec2(1, 1));
 	circle1->cShape = std::make_shared<CCircle>(0.25f * PIXELS_PER_METER);
 	circle1->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::KINEMATIC);
@@ -49,16 +99,38 @@ void SceneCollision::Init()
 	circle3->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::KINEMATIC);
 	circle3->cRigidbody->m_velocity = Vec2(-1.0f, 0);
 	circle3->cCollider = std::make_shared<CCircleCollider>(0.25f);
-	circle3->cCollisionState = std::make_shared<CCollisionState>();
+	circle3->cCollisionState = std::make_shared<CCollisionState>();*/
 }
 
-void SceneCollision::Update(float dt)
+void SceneNoQuadTree::Update(float dt)
 {
 	m_entityManager.Update();
 	m_physics.Update(m_entityManager, dt);
+	for (auto& e : m_entityManager.GetEntities())
+	{
+		if (e->cTransform && e->cRigidbody)
+		{
+			if (e->cTransform->m_position.x > GameConfig::SCREEN_WIDTH)
+			{
+				e->cTransform->m_position.x = 0;
+			}
+			else if (e->cTransform->m_position.x < 0)
+			{
+				e->cTransform->m_position.x = GameConfig::SCREEN_WIDTH;
+			}
+			if (e->cTransform->m_position.y > GameConfig::SCREEN_HEIGHT)
+			{
+				e->cTransform->m_position.y = 0;
+			}
+			else if (e->cTransform->m_position.y < 0)
+			{
+				e->cTransform->m_position.y = GameConfig::SCREEN_HEIGHT;
+			}
+		}
+	}
 }
 
-void SceneCollision::Render(sf::RenderWindow& m_window)
+void SceneNoQuadTree::Render(sf::RenderWindow& m_window)
 {
 	m_window.clear();
 
@@ -75,7 +147,7 @@ void SceneCollision::Render(sf::RenderWindow& m_window)
 			{
 				shape->setFillColor(sf::Color::Red);
 			}
-			shape->setPosition(sf::Vector2f(e->cTransform->m_position.x * PIXELS_PER_METER, e->cTransform->m_position.y * PIXELS_PER_METER));
+			shape->setPosition(sf::Vector2f(e->cTransform->m_position.x, e->cTransform->m_position.y));
 			/*if (auto circle = dynamic_cast<CCircle*>(e->cShape.get()))
 			{
 				float radius = circle->GetRadius();
@@ -89,7 +161,7 @@ void SceneCollision::Render(sf::RenderWindow& m_window)
 	//m_window.display();
 }
 
-void SceneCollision::ProcessInput(sf::RenderWindow& m_window)
+void SceneNoQuadTree::ProcessInput(sf::RenderWindow& m_window)
 {
 	while (const std::optional event = m_window.pollEvent())
 	{
@@ -99,13 +171,13 @@ void SceneCollision::ProcessInput(sf::RenderWindow& m_window)
 		{
 			if (keyPressed->scancode == sf::Keyboard::Scancode::Space)
 			{
-				m_game->ChangeScene("SceneNoQuadTree");
+				m_game->ChangeScene("SceneGravity");
 			}
 		}
 	}
 }
 
-void SceneCollision::OnEnd()
+void SceneNoQuadTree::OnEnd()
 {
 
 }

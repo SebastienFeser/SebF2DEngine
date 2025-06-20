@@ -3,9 +3,11 @@
 #include "GameEngine.h"
 #include "../Scenes/SceneGravity.h"
 #include "../Scenes/SceneCollision.h"
+#include "../Scenes/SceneNoQuadTree.h"
+#include "../Config//GameConfig.h"
 #include <iostream>
 
-GameEngine::GameEngine() : m_window(sf::VideoMode({ 800, 600 }), "SebF2DEngine"), m_currentFrame(0)
+GameEngine::GameEngine() : m_window(sf::VideoMode({ GameConfig::SCREEN_WIDTH, GameConfig::SCREEN_HEIGHT }), "SebF2DEngine"), m_currentFrame(0)
 {
 	//m_window.setFramerateLimit(60);
 }
@@ -30,6 +32,10 @@ void GameEngine::ChangeScene(const std::string& name)
 	else if (name == "SceneCollision")
 	{
 		m_currentScene = std::make_shared<SceneCollision>(this);
+	}
+	else if (name == "SceneNoQuadTree")
+	{
+		m_currentScene = std::make_shared<SceneNoQuadTree>(this);
 	}
 
 	m_currentScene->Init();
