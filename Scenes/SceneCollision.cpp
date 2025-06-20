@@ -70,7 +70,7 @@ void SceneCollision::Render(sf::RenderWindow& m_window)
 		}
 	}
 
-	m_window.display();
+	//m_window.display();
 }
 
 void SceneCollision::ProcessInput(sf::RenderWindow& m_window)

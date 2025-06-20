@@ -32,7 +32,7 @@ void SceneGravity::Render(sf::RenderWindow& m_window)
 		}
 	}
 
-	m_window.display();
+	//m_window.display();
 }
 
 void SceneGravity::ProcessInput(sf::RenderWindow& m_window)
