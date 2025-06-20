@@ -46,7 +46,7 @@ public:
 		shape->setOutlineColor(m_outlineColor);
 		shape->setOutlineThickness(m_outlineThickness);
 		shape->setRadius(m_radius);
-		shape->setOrigin(sf::Vector2f(0.f, 0.f));
+		shape->setOrigin(sf::Vector2f(m_radius, m_radius));
 		return shape;
 	}
 };
