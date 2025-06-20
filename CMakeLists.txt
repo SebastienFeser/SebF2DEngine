@@ -9,7 +9,7 @@ project ("SebF2DEngine")
 
 find_package(SFML 3 REQUIRED COMPONENTS Graphics)
 
-add_executable (SebF2DEngine "SebF2DEngine.cpp" "SebF2DEngine.h" "ECS/Entity.h" "ECS/EntityManager.h" "Game/CTransform.h" "Maths/Vec2.h" "Game/CRigidbody.h" "Game/CShape.h" "ECS/Entity.cpp" "ECS/EntityManager.cpp" "Engine/GameEngine.h" "Engine/GameEngine.cpp" "Physics/SPhysics.h" "Physics/SPhysics.cpp" "Engine/Scene.h" "Scenes/SceneGravity.h" "Scenes/SceneGravity.cpp" "Game/CCollider.h" "Scenes/SceneCollision.h" "Scenes/SceneCollision.cpp" "Physics/PhysicsConstants.h" "Physics/Collision.h" "Physics/Collision.cpp" "Game/CCollisionState.h" "Scenes/SceneNoQuadTree.h" "Scenes/SceneQuadTree.h" "Scenes/SceneNoQuadTree.cpp" "Config/GameConfig.h" "Physics/QuadTree.h" "Physics/QuadTree.cpp")
+add_executable (SebF2DEngine "SebF2DEngine.cpp" "SebF2DEngine.h" "ECS/Entity.h" "ECS/EntityManager.h" "Game/CTransform.h" "Maths/Vec2.h" "Game/CRigidbody.h" "Game/CShape.h" "ECS/Entity.cpp" "ECS/EntityManager.cpp" "Engine/GameEngine.h" "Engine/GameEngine.cpp" "Physics/SPhysics.h" "Physics/SPhysics.cpp" "Engine/Scene.h" "Scenes/SceneGravity.h" "Scenes/SceneGravity.cpp" "Game/CCollider.h" "Scenes/SceneCollision.h" "Scenes/SceneCollision.cpp" "Physics/PhysicsConstants.h" "Physics/Collision.h" "Physics/Collision.cpp" "Game/CCollisionState.h" "Scenes/SceneNoQuadTree.h" "Scenes/SceneQuadTree.h" "Scenes/SceneNoQuadTree.cpp" "Config/GameConfig.h" "Physics/QuadTree.h" "Physics/QuadTree.cpp" "Scenes/SceneQuadTree.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET SebF2DEngine PROPERTY CXX_STANDARD 20)

@@ -8,6 +8,9 @@ class SceneNoQuadTree : public Scene
 public:
 	SceneNoQuadTree(GameEngine* game) : Scene(game) {}
 
+	Vec2 RandomPosition();
+	Vec2 RandomScale();
+	Vec2 RandomVelocity();
 	void Init() override;
 	void Update(float dt) override;
 	void Render(sf::RenderWindow& m_window) override;

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "SceneNoQuadTree.h"
+#include "SceneQuadTree.h"
 #include "../Physics/PhysicsConstants.h"
 #include "../Config/GameConfig.h"
 #include <random>
 
-Vec2 SceneNoQuadTree::RandomPosition()
+Vec2 SceneQuadTree::RandomPosition()
 {
 	float minX = 0;
 	float maxX = GameConfig::SCREEN_WIDTH;
@@ -17,7 +17,7 @@ Vec2 SceneNoQuadTree::RandomPosition()
 	return Vec2(x, y);
 }
 
-Vec2 SceneNoQuadTree::RandomScale()
+Vec2 SceneQuadTree::RandomScale()
 {
 	float minX = 10;
 	float maxX = 20;
@@ -29,7 +29,7 @@ Vec2 SceneNoQuadTree::RandomScale()
 	return Vec2(x, y);
 }
 
-Vec2 SceneNoQuadTree::RandomVelocity()
+Vec2 SceneQuadTree::RandomVelocity()
 {
 	float minX = -20.0f;
 	float maxX = 20.0f;
@@ -41,7 +41,7 @@ Vec2 SceneNoQuadTree::RandomVelocity()
 	return Vec2(x, y);
 }
 
-void SceneNoQuadTree::Init()
+void SceneQuadTree::Init()
 {
 	std::srand(std::time(nullptr));
 	for (int i = 0; i < m_aabbCount; i++)
@@ -55,7 +55,7 @@ void SceneNoQuadTree::Init()
 		rectangle->cCollider = std::make_shared<CAABBCollider>(randomScale);
 		rectangle->cCollisionState = std::make_shared<CCollisionState>();
 	}
-	m_physics.m_useQuadTree = false;
+	m_physics.m_useQuadTree = true;
 	/*auto circle1 = m_entityManager.AddEntity("Circle");
 	circle1->cTransform = std::make_shared<CTransform>(Vec2(1, 1));
 	circle1->cShape = std::make_shared<CCircle>(0.25f * PIXELS_PER_METER);
@@ -105,7 +105,7 @@ void SceneNoQuadTree::Init()
 	circle3->cCollisionState = std::make_shared<CCollisionState>();*/
 }
 
-void SceneNoQuadTree::Update(float dt)
+void SceneQuadTree::Update(float dt)
 {
 	m_entityManager.Update();
 	m_physics.Update(m_entityManager, dt);
@@ -133,7 +133,7 @@ void SceneNoQuadTree::Update(float dt)
 	}
 }
 
-void SceneNoQuadTree::Render(sf::RenderWindow& m_window)
+void SceneQuadTree::Render(sf::RenderWindow& m_window)
 {
 	m_window.clear();
 
@@ -164,7 +164,7 @@ void SceneNoQuadTree::Render(sf::RenderWindow& m_window)
 	//m_window.display();
 }
 
-void SceneNoQuadTree::ProcessInput(sf::RenderWindow& m_window)
+void SceneQuadTree::ProcessInput(sf::RenderWindow& m_window)
 {
 	while (const std::optional event = m_window.pollEvent())
 	{
@@ -174,13 +174,13 @@ void SceneNoQuadTree::ProcessInput(sf::RenderWindow& m_window)
 		{
 			if (keyPressed->scancode == sf::Keyboard::Scancode::Space)
 			{
-				m_game->ChangeScene("SceneQuadTree");
+				m_game->ChangeScene("SceneGravity");
 			}
 		}
 	}
 }
 
-void SceneNoQuadTree::OnEnd()
+void SceneQuadTree::OnEnd()
 {
 
 }
