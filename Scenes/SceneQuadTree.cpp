@@ -161,6 +161,7 @@ void SceneQuadTree::Render(sf::RenderWindow& m_window)
 		}
 	}
 
+	m_physics.m_quadTree.Draw(m_window);
 	//m_window.display();
 }
 

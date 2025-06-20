@@ -3,7 +3,7 @@
 #include "Collision.h"
 #include "../Config/GameConfig.h"
 
-SPhysics::SPhysics() : m_quadTree(0, Vec2(0, 0), Vec2(GameConfig::SCREEN_WIDTH, GameConfig::SCREEN_HEIGHT)) {};
+SPhysics::SPhysics() : m_quadTree(0, Vec2(GameConfig::SCREEN_WIDTH/2, GameConfig::SCREEN_HEIGHT/2), Vec2(GameConfig::SCREEN_WIDTH, GameConfig::SCREEN_HEIGHT)) {};
 
 void SPhysics::Update(EntityManager& entityManager, float dt)
 {

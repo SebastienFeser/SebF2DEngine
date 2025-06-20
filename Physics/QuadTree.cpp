@@ -1,4 +1,5 @@
 #include "QuadTree.h"
+#include <SFML/Graphics.hpp>
 
 QuadTree::QuadTree(int level, const Vec2& position, const Vec2& size) : m_level(level), m_position(position), m_size(size) {}
 
@@ -82,6 +83,28 @@ void QuadTree::Insert(std::shared_ptr<Entity> entity)
 				++entity;
 			}
 		}
+	}
+}
+
+void QuadTree::Draw(sf::RenderWindow& m_window)
+{
+	if (m_children[0])
+	{
+		sf::RectangleShape horizontal = sf::RectangleShape(sf::Vector2f(m_size.x, 1.0f));
+		sf::RectangleShape vertical = sf::RectangleShape(sf::Vector2f(1.0f, m_size.y));
+		//horizontal.setOrigin(sf::Vector2f(m_size.x / 2, m_size.y / 2));
+		//vertical.setOrigin(sf::Vector2f(m_size.x / 2, m_size.y / 2));
+		horizontal.setPosition(sf::Vector2f(m_position.x - m_size.x / 2, m_position.y));
+		vertical.setPosition(sf::Vector2f(m_position.x, m_position.y - m_size.y / 2));
+		horizontal.setFillColor(sf::Color::Blue);
+		vertical.setFillColor(sf::Color::Blue);
+
+		m_window.draw(horizontal);
+		m_window.draw(vertical);
+		m_children[0]->Draw(m_window);
+		m_children[1]->Draw(m_window);
+		m_children[2]->Draw(m_window);
+		m_children[3]->Draw(m_window);
 	}
 }
 

@@ -13,6 +13,7 @@ public:
 	void Clear();
 	void Insert(std::shared_ptr<Entity> entity);
 	void Retrieve(std::vector<std::shared_ptr<Entity>>& returnEntities, const std::shared_ptr<Entity>& target);
+	void Draw(sf::RenderWindow& m_window);
 
 private:
 	void Split();
