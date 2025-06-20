@@ -50,6 +50,8 @@ void SceneCollision::Init()
 	circle3->cRigidbody->m_velocity = Vec2(-1.0f, 0);
 	circle3->cCollider = std::make_shared<CCircleCollider>(0.25f);
 	circle3->cCollisionState = std::make_shared<CCollisionState>();
+
+	m_physics.m_useQuadTree = false;
 }
 
 void SceneCollision::Update(float dt)

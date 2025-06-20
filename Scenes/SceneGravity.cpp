@@ -7,6 +7,7 @@ void SceneGravity::Init()
 	circle->cTransform = std::make_shared <CTransform>(Vec2(1, 1));
 	circle->cShape = std::make_shared<CCircle>(50.0f);
 	circle->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::DYNAMIC);
+	m_physics.m_useQuadTree = false;
 }
 
 void SceneGravity::Update(float dt)

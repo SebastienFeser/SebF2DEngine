@@ -18,9 +18,9 @@ Vec2 RandomPosition()
 Vec2 RandomScale()
 {
 	float minX = 10;
-	float maxX = 30;
+	float maxX = 20;
 	float minY = 10;
-	float maxY = 30;
+	float maxY = 20;
 	float x = minX + static_cast<float>(rand()) / RAND_MAX * (maxX - minX);
 	float y = minY + static_cast<float>(rand()) / RAND_MAX * (maxY - minY);
 
@@ -53,6 +53,7 @@ void SceneNoQuadTree::Init()
 		rectangle->cCollider = std::make_shared<CAABBCollider>(randomScale);
 		rectangle->cCollisionState = std::make_shared<CCollisionState>();
 	}
+	m_physics.m_useQuadTree = false;
 	/*auto circle1 = m_entityManager.AddEntity("Circle");
 	circle1->cTransform = std::make_shared<CTransform>(Vec2(1, 1));
 	circle1->cShape = std::make_shared<CCircle>(0.25f * PIXELS_PER_METER);

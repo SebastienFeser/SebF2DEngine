@@ -1,6 +1,9 @@
 #include "SPhysics.h"
 #include "PhysicsConstants.h"
 #include "Collision.h"
+#include "../Config/GameConfig.h"
+
+SPhysics::SPhysics() : m_quadTree(0, Vec2(0, 0), Vec2(GameConfig::SCREEN_WIDTH, GameConfig::SCREEN_HEIGHT)) {};
 
 void SPhysics::Update(EntityManager& entityManager, float dt)
 {
@@ -37,28 +40,64 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 
 	const auto& entities = entityManager.GetEntities();
 
-	for (size_t i = 0; i < entities.size(); ++i)
+	if (m_useQuadTree)
 	{
-		for (size_t j = i + 1; j < entities.size(); ++j)
+		m_quadTree.Clear();
+
+		for (auto& e : entities)
 		{
-			auto& a = entities[i];
-			auto& b = entities[j];
-
-			if (!a->cTransform || !a->cCollider) continue;
-			if (!b->cTransform || !b->cCollider) continue;
-
-			if (Collision(*a->cTransform, *a->cCollider, *b->cTransform, *b->cCollider))
+			if (e->cTransform && e->cCollider && e->cCollider->m_type == ColliderType::AABB)
 			{
-				if (a->cCollisionState)
+				m_quadTree.Insert(e);
+			}
+		}
+
+		for (auto& e : entities)
+		{
+			if (!e->cTransform || !e->cCollider) continue;
+
+			std::vector<std::shared_ptr<Entity>> candidates;
+			m_quadTree.Retrieve(candidates, e);
+
+			for (const auto& other : candidates)
+			{
+				if (e == other) continue;
+				if (!other->cTransform || !other->cCollider) continue;
+
+				if (Collision(*e->cTransform, *e->cCollider, *other->cTransform, *other->cCollider))
 				{
-					a->cCollisionState->isColliding = true;
+					if (e->cCollisionState) e->cCollisionState->isColliding = true;
+					if (other->cCollisionState) other->cCollisionState->isColliding = true;
 				}
-				if (b->cCollisionState)
-				{
-					b->cCollisionState->isColliding = true;
-				}
-				//Resolve Collision
 			}
 		}
 	}
+	else
+	{
+		for (size_t i = 0; i < entities.size(); ++i)
+		{
+			for (size_t j = i + 1; j < entities.size(); ++j)
+			{
+				auto& a = entities[i];
+				auto& b = entities[j];
+
+				if (!a->cTransform || !a->cCollider) continue;
+				if (!b->cTransform || !b->cCollider) continue;
+
+				if (Collision(*a->cTransform, *a->cCollider, *b->cTransform, *b->cCollider))
+				{
+					if (a->cCollisionState)
+					{
+						a->cCollisionState->isColliding = true;
+					}
+					if (b->cCollisionState)
+					{
+						b->cCollisionState->isColliding = true;
+					}
+					//Resolve Collision
+				}
+			}
+		}
+	}
+	
 }

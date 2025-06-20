@@ -4,7 +4,7 @@
 
 class SceneNoQuadTree : public Scene
 {
-	const int m_aabbCount = 300;
+	const int m_aabbCount = 1000;
 public:
 	SceneNoQuadTree(GameEngine* game) : Scene(game) {}
 
