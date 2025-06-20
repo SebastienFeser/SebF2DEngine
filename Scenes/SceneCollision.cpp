@@ -5,19 +5,35 @@ void SceneCollision::Init()
 {
 	auto circle1 = m_entityManager.AddEntity("Circle");
 	circle1->cTransform = std::make_shared<CTransform>(Vec2(1, 1));
-	circle1->cShape = std::make_shared<CCircle>(1.f);
+	circle1->cShape = std::make_shared<CCircle>(0.25f * PIXELS_PER_METER);
 	circle1->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::KINEMATIC);
-	circle1->cRigidbody->m_velocity = Vec2(3, 0);
-	circle1->cCollider = std::make_shared<CCircleCollider>(1.0f);
+	circle1->cRigidbody->m_velocity = Vec2(1.5f, 0);
+	circle1->cCollider = std::make_shared<CCircleCollider>(0.25f);
 	circle1->cCollisionState = std::make_shared<CCollisionState>();
 
 	auto circle2 = m_entityManager.AddEntity("Circle");
 	circle2->cTransform = std::make_shared<CTransform>(Vec2(5, 1));
-	circle2->cShape = std::make_shared<CCircle>(1.f);
+	circle2->cShape = std::make_shared<CCircle>(0.25f * PIXELS_PER_METER);
 	circle2->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::KINEMATIC);
-	circle2->cRigidbody->m_velocity = Vec2(-3, 0);
-	circle2->cCollider = std::make_shared<CCircleCollider>(1.0f);
+	circle2->cRigidbody->m_velocity = Vec2(-1.5f, 0);
+	circle2->cCollider = std::make_shared<CCircleCollider>(0.25f);
 	circle2->cCollisionState = std::make_shared<CCollisionState>();
+
+	auto rectangle1 = m_entityManager.AddEntity("OrientedRectangle");
+	rectangle1->cTransform = std::make_shared<CTransform>(Vec2(1, 3));
+	rectangle1->cShape = std::make_shared<COrientedRectangle>(Vec2(0.5f * PIXELS_PER_METER, 0.5f * PIXELS_PER_METER));
+	rectangle1->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::KINEMATIC);
+	rectangle1->cRigidbody->m_velocity = Vec2(1.5f, 0);
+	rectangle1->cCollider = std::make_shared<CAABBCollider>(Vec2(0.5f, 0.5f));
+	rectangle1->cCollisionState = std::make_shared<CCollisionState>();
+
+	auto rectangle2 = m_entityManager.AddEntity("OrientedRectangle");
+	rectangle2->cTransform = std::make_shared<CTransform>(Vec2(5, 3.2));
+	rectangle2->cShape = std::make_shared<COrientedRectangle>(Vec2(0.5f * PIXELS_PER_METER, 0.5f * PIXELS_PER_METER));
+	rectangle2->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::KINEMATIC);
+	rectangle2->cRigidbody->m_velocity = Vec2(-1.5f, 0);
+	rectangle2->cCollider = std::make_shared<CAABBCollider>(Vec2(0.5f, 0.5f));
+	rectangle2->cCollisionState = std::make_shared<CCollisionState>();
 }
 
 void SceneCollision::Update(float dt)
@@ -44,11 +60,12 @@ void SceneCollision::Render(sf::RenderWindow& m_window)
 				shape->setFillColor(sf::Color::Red);
 			}
 			shape->setPosition(sf::Vector2f(e->cTransform->m_position.x * PIXELS_PER_METER, e->cTransform->m_position.y * PIXELS_PER_METER));
-			if (auto circle = dynamic_cast<CCircle*>(e->cShape.get()))
+			/*if (auto circle = dynamic_cast<CCircle*>(e->cShape.get()))
 			{
 				float radius = circle->GetRadius();
+				shape->setOrigin(sf::Vector2f(radius, radius));
 				shape->setScale(sf::Vector2f(radius * PIXELS_PER_METER, radius * PIXELS_PER_METER));
-			}
+			}*/
 			m_window.draw(*shape);
 		}
 	}
