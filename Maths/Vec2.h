@@ -30,4 +30,7 @@ public:
 		float len = Length();
 		return (len != 0) ? Vec2{ x / len, y / len } : Vec2{ 0, 0 };
 	}
+	static float Dot(const Vec2& a, const Vec2& b) {
+		return a.x * b.x + a.y * b.y;
+	}
 };

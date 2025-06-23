@@ -64,7 +64,9 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 				if (e == other) continue;
 				if (!other->cTransform || !other->cCollider) continue;
 
-				if (Collision(*e->cTransform, *e->cCollider, *other->cTransform, *other->cCollider))
+				CollisionResponse collisionResponse = Collision(*e->cTransform, *e->cCollider, *other->cTransform, *other->cCollider);
+
+				if (collisionResponse.isColliding)
 				{
 					if (e->cCollisionState) e->cCollisionState->isColliding = true;
 					if (other->cCollisionState) other->cCollisionState->isColliding = true;
@@ -84,7 +86,9 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 				if (!a->cTransform || !a->cCollider) continue;
 				if (!b->cTransform || !b->cCollider) continue;
 
-				if (Collision(*a->cTransform, *a->cCollider, *b->cTransform, *b->cCollider))
+				CollisionResponse collisionResponse = Collision(*a->cTransform, *a->cCollider, *b->cTransform, *b->cCollider);
+
+				if (collisionResponse.isColliding)
 				{
 					if (a->cCollisionState)
 					{
@@ -94,7 +98,30 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 					{
 						b->cCollisionState->isColliding = true;
 					}
-					//Resolve Collision
+					if (a->cRigidbody)
+					{
+						if (b->cRigidbody)
+						{
+							if (a->cRigidbody->m_bodyType == CRigidbody::BodyType::DYNAMIC && b->cRigidbody->m_bodyType == CRigidbody::BodyType::DYNAMIC)
+							{
+								switch (a->cCollider->m_type)
+								{
+								case ColliderType::Circle:
+									switch (b->cCollider->m_type)
+									{
+									case ColliderType::Circle:
+										CollisionResponseCircleVsCircle(a, b, collisionResponse);
+										break;
+									}
+									break;
+								}
+							}
+						}
+					}
+					else if (b->cRigidbody)
+					{
+
+					}
 				}
 			}
 		}
