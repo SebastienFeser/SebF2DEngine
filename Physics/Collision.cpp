@@ -1,4 +1,5 @@
 #include "Collision.h"
+#include <algorithm>
 
 CollisionResponse Collision(const CTransform& aTransform, const CCollider& aCollider, const CTransform& bTransform, const CCollider& bCollider)
 {
@@ -61,7 +62,7 @@ CollisionResponse CircleVsCircle(const CTransform& aTransform, const CCircleColl
 	if (distSq <= rSum * rSum)
 	{
 		collisionResponse.isColliding = true;
-		collisionResponse.normal = delta.Normalized();
+		collisionResponse.normal = delta / sqrt(distSq);
 		collisionResponse.penetration = (aCollider.m_radius + bCollider.m_radius) - sqrt(distSq);
 		return collisionResponse;
 	}
@@ -126,23 +127,33 @@ CollisionResponse AABBVsAABB(const CTransform& aTransform, const CAABBCollider& 
 
 void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse)
 {
-	Vec2 normal = (bEntity->cTransform->m_position - aEntity->cTransform->m_position).Normalized();
-	Vec2 relativeVelocity = bEntity->cRigidbody->m_velocity - aEntity->cRigidbody->m_velocity;
-	float velAlongNormal = Vec2::Dot(relativeVelocity, normal);
-
-	float restitution = 1.0f;
-
-	float j = 0;
-	if (aEntity->cRigidbody->m_mass != 0 && bEntity->cRigidbody->m_mass != 0)
+	if (collisionResponse.penetration > 0)
 	{
+		Vec2& posA = aEntity->cTransform->m_position;
+		Vec2& posB = bEntity->cTransform->m_position;
+		Vec2& velA = aEntity->cRigidbody->m_velocity;
+		Vec2& velB = bEntity->cRigidbody->m_velocity;
+		float massA = aEntity->cRigidbody->m_mass;
+		float massB = bEntity->cRigidbody->m_mass;
+		float bounceA = aEntity->cRigidbody->m_bounce;
+		float bounceB = bEntity->cRigidbody->m_bounce;
 
-		j = -(1 + restitution) * velAlongNormal;
-		j /= (1 / aEntity->cRigidbody->m_mass + 1 / bEntity->cRigidbody->m_mass);
+		Vec2 relVelocity = velB - velA;
+		float velAlongNormal = Vec2::Dot(relVelocity, collisionResponse.normal);
 
-		Vec2 impulse = normal * j;
+		if (velAlongNormal > 0) return;
 
-		aEntity->cRigidbody->m_velocity -= impulse / aEntity->cRigidbody->m_mass;
-		bEntity->cRigidbody->m_velocity += impulse / bEntity->cRigidbody->m_mass;
+		//float e = std::min(bounceA, bounceB);
+		//float j = -(1.0f + e) * velAlongNormal;
+		float j = -2.0f * velAlongNormal;
+		j /= 1.0f / massA + 1.0f / massB;
+
+		Vec2 impulse = collisionResponse.normal * j;
+		velA -= (impulse / massA);
+		velB += (impulse / massB);
+		velA *= bounceA;
+		velB *= bounceB;
+		
 	}
-
-};
+	
+}
