@@ -171,5 +171,17 @@ void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::share
 		velB *= bounceB;
 	}
 		
-	
+	Vec2& posA = aEntity->cTransform->m_position;
+	Vec2& posB = bEntity->cTransform->m_position;
+
+	float totalMass = (1.0f / massA) + (1.0f / massB);
+	if (totalMass == 0) return;
+
+	Vec2 correction = collisionResponse.normal * (collisionResponse.penetration / totalMass);
+
+	if (typeA == CRigidbody::BodyType::DYNAMIC)
+		posA -= correction * (1.0f / massA);
+
+	if (typeB == CRigidbody::BodyType::DYNAMIC)
+		posB += correction * (1.0f / massB);
 }
