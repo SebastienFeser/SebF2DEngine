@@ -127,33 +127,49 @@ CollisionResponse AABBVsAABB(const CTransform& aTransform, const CAABBCollider& 
 
 void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse)
 {
-	if (collisionResponse.penetration > 0)
+	if (collisionResponse.penetration <= 0) return;
+
+	auto rbA = aEntity->cRigidbody;
+	auto rbB = bEntity->cRigidbody;
+
+	auto typeA = rbA ? rbA->m_bodyType : CRigidbody::BodyType::STATIC;
+	auto typeB = rbB ? rbB->m_bodyType : CRigidbody::BodyType::STATIC;
+
+	if ((typeA != CRigidbody::BodyType::DYNAMIC) && (typeB != CRigidbody::BodyType::DYNAMIC) || (typeA == CRigidbody::BodyType::KINEMATIC) || (typeB == CRigidbody::BodyType::KINEMATIC)) return;
+
+
+	//Vec2& posA = aEntity->cTransform->m_position;
+	//Vec2& posB = bEntity->cTransform->m_position;
+	Vec2 dummyVel = Vec2();
+	Vec2& velA = rbA ? rbA->m_velocity : dummyVel;
+	Vec2& velB = rbB ? rbB->m_velocity : dummyVel;
+	float massA = (typeA == CRigidbody::BodyType::DYNAMIC) ? rbA->m_mass : std::numeric_limits<float>::infinity();
+	float massB = (typeB == CRigidbody::BodyType::DYNAMIC) ? rbB->m_mass : std::numeric_limits<float>::infinity();
+	float bounceA = rbA ? rbA->m_bounce : 1.0f;
+	float bounceB = rbB ? rbB->m_bounce : 1.0f;
+
+	Vec2 relVelocity = velB - velA;
+	float velAlongNormal = Vec2::Dot(relVelocity, collisionResponse.normal);
+
+	if (velAlongNormal > 0) return;
+
+	//float e = std::min(bounceA, bounceB);
+	//float j = -(1.0f + e) * velAlongNormal;
+	float j = -2.0f * velAlongNormal;
+	j /= 1.0f / massA + 1.0f / massB;
+
+	Vec2 impulse = collisionResponse.normal * j;
+	if (typeA == CRigidbody::BodyType::DYNAMIC && rbA)
 	{
-		Vec2& posA = aEntity->cTransform->m_position;
-		Vec2& posB = bEntity->cTransform->m_position;
-		Vec2& velA = aEntity->cRigidbody->m_velocity;
-		Vec2& velB = bEntity->cRigidbody->m_velocity;
-		float massA = aEntity->cRigidbody->m_mass;
-		float massB = bEntity->cRigidbody->m_mass;
-		float bounceA = aEntity->cRigidbody->m_bounce;
-		float bounceB = bEntity->cRigidbody->m_bounce;
-
-		Vec2 relVelocity = velB - velA;
-		float velAlongNormal = Vec2::Dot(relVelocity, collisionResponse.normal);
-
-		if (velAlongNormal > 0) return;
-
-		//float e = std::min(bounceA, bounceB);
-		//float j = -(1.0f + e) * velAlongNormal;
-		float j = -2.0f * velAlongNormal;
-		j /= 1.0f / massA + 1.0f / massB;
-
-		Vec2 impulse = collisionResponse.normal * j;
-		velA -= (impulse / massA);
-		velB += (impulse / massB);
+		velA -= impulse / massA;
 		velA *= bounceA;
-		velB *= bounceB;
-		
 	}
+
+	if (typeB == CRigidbody::BodyType::DYNAMIC && rbB)
+	{
+		velB += impulse / massB;
+		velB *= bounceB;
+	}
+		
 	
 }
