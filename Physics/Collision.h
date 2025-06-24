@@ -16,4 +16,5 @@ CollisionResponse CircleVsAABB(const CTransform& circleTransform, const CCircleC
 CollisionResponse AABBVsAABB(const CTransform& aTransform, const CAABBCollider&, const CTransform& bTransform, const CAABBCollider& bCollider);
 
 void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse);
-void CollisionResponseCircleVsRect(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> rectEntity, CollisionResponse& collisionResponse);
+void CollisionResponseCircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> rectEntity, CollisionResponse& collisionResponse);
+void CollisionResponseAABBVsAABB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse);

@@ -107,14 +107,18 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 							CollisionResponseCircleVsCircle(a, b, collisionResponse);
 							break;
 						case ColliderType::AABB:
-							CollisionResponseCircleVsRect(a, b, collisionResponse);
+							CollisionResponseCircleVsAABB(a, b, collisionResponse);
 							break;
 						}
+						break;
 					case ColliderType::AABB:
 						switch (b->cCollider->m_type)
 						{
 						case ColliderType::Circle:
-							CollisionResponseCircleVsRect(b, a, collisionResponse);
+							CollisionResponseCircleVsAABB(b, a, collisionResponse);
+							break;
+						case ColliderType::AABB:
+							CollisionResponseAABBVsAABB(a, b, collisionResponse);
 							break;
 						}
 						break;

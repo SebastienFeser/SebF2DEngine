@@ -62,7 +62,7 @@ CollisionResponse CircleVsCircle(const CTransform& aTransform, const CCircleColl
 	if (distSq <= rSum * rSum)
 	{
 		collisionResponse.isColliding = true;
-		collisionResponse.normal = -delta / sqrt(distSq);
+		collisionResponse.normal = delta / sqrt(distSq);
 		collisionResponse.penetration = (aCollider.m_radius + bCollider.m_radius) - sqrt(distSq);
 		return collisionResponse;
 	}
@@ -129,16 +129,29 @@ CollisionResponse AABBVsAABB(const CTransform& aTransform, const CAABBCollider& 
 	Vec2 bMin = bTransform.m_position - bCollider.m_size * 0.5f;
 	Vec2 bMax = bTransform.m_position + bCollider.m_size * 0.5f;
 
-	if ((aMin.x <= bMax.x && aMax.x >= bMin.x &&
-		aMin.y <= bMax.y && aMax.y >= bMin.y))
+	if (aMax.x < bMin.x || aMin.x > bMax.x ||
+		aMax.y < bMin.y || aMin.y > bMax.y)
 	{
-		collisionResponse.isColliding = true;
 		return collisionResponse;
+	}
+
+	collisionResponse.isColliding = true;
+
+	float overlapX = std::min(aMax.x, bMax.x) - std::max(aMin.x, bMin.x);
+	float overlapY = std::min(aMax.y, bMax.y) - std::max(aMin.y, bMin.y);
+
+	if (overlapX < overlapY)
+	{
+		collisionResponse.penetration = overlapX;
+		collisionResponse.normal = (aTransform.m_position.x < bTransform.m_position.x) ? Vec2(1.0f, 0.0f) : Vec2(-1.0f, 0.0f);
 	}
 	else
 	{
-		return collisionResponse;
+		collisionResponse.penetration = overlapY;
+		collisionResponse.normal = (aTransform.m_position.y < bTransform.m_position.y) ? Vec2(0.0f, 1.0f) : Vec2(0.0f, -1.0f);
 	}
+
+	return collisionResponse;
 }
 
 void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse)
@@ -212,7 +225,7 @@ void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::share
 		posB += correction * (1.0f / massB);
 }
 
-void CollisionResponseCircleVsRect(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> rectEntity, CollisionResponse& collisionResponse)
+void CollisionResponseCircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> rectEntity, CollisionResponse& collisionResponse)
 {
 	if (collisionResponse.penetration <= 0) return;
 
@@ -268,6 +281,70 @@ void CollisionResponseCircleVsRect(std::shared_ptr<Entity> circleEntity, std::sh
 	if (totalMass == 0) return;
 
 	Vec2 correction = collisionResponse.normal * (collisionResponse.penetration / totalMass);
+
+	if (typeA == CRigidbody::BodyType::DYNAMIC)
+		posA -= correction * (1.0f / massA);
+
+	if (typeB == CRigidbody::BodyType::DYNAMIC)
+		posB += correction * (1.0f / massB);
+}
+
+void CollisionResponseAABBVsAABB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse)
+{
+	if (collisionResponse.penetration <= 0) return;
+
+	auto rbA = aEntity->cRigidbody;
+	auto rbB = bEntity->cRigidbody;
+
+	auto typeA = rbA ? rbA->m_bodyType : CRigidbody::BodyType::STATIC;
+	auto typeB = rbB ? rbB->m_bodyType : CRigidbody::BodyType::STATIC;
+
+	// Ignore si les deux sont statiques ou si l’un est kinematic
+	if ((typeA != CRigidbody::BodyType::DYNAMIC) && (typeB != CRigidbody::BodyType::DYNAMIC)) return;
+	if (typeA == CRigidbody::BodyType::KINEMATIC || typeB == CRigidbody::BodyType::KINEMATIC) return;
+
+	Vec2 dummyVel = Vec2();
+	Vec2& velA = rbA && typeA == CRigidbody::BodyType::DYNAMIC ? rbA->m_velocity : dummyVel;
+	Vec2& velB = rbB && typeB == CRigidbody::BodyType::DYNAMIC ? rbB->m_velocity : dummyVel;
+
+	float massA = (typeA == CRigidbody::BodyType::DYNAMIC) ? rbA->m_mass : std::numeric_limits<float>::infinity();
+	float massB = (typeB == CRigidbody::BodyType::DYNAMIC) ? rbB->m_mass : std::numeric_limits<float>::infinity();
+
+	float bounceA = rbA ? rbA->m_bounce : 1.0f;
+	float bounceB = rbB ? rbB->m_bounce : 1.0f;
+
+	Vec2 relVelocity = velB - velA;
+	float velAlongNormal = Vec2::Dot(relVelocity, collisionResponse.normal);
+
+	if (velAlongNormal > 0) return;
+
+	//float e = std::min(bounceA, bounceB);
+
+	//float j = -(1.0f + e) * velAlongNormal;
+	float j = -2.0f * velAlongNormal;
+	j /= (1.0f / massA + 1.0f / massB);
+
+	Vec2 impulse = collisionResponse.normal * j;
+
+	if (typeA == CRigidbody::BodyType::DYNAMIC)
+	{
+		velA -= impulse / massA;
+		velA *= bounceA;
+	}
+
+	if (typeB == CRigidbody::BodyType::DYNAMIC)
+	{
+		velB += impulse / massB;
+		velB *= bounceB;
+	}
+
+	Vec2& posA = aEntity->cTransform->m_position;
+	Vec2& posB = bEntity->cTransform->m_position;
+
+	float totalMassInverse = (1.0f / massA) + (1.0f / massB);
+	if (totalMassInverse == 0) return;
+
+	Vec2 correction = collisionResponse.normal * (collisionResponse.penetration / totalMassInverse);
 
 	if (typeA == CRigidbody::BodyType::DYNAMIC)
 		posA -= correction * (1.0f / massA);
