@@ -2,6 +2,9 @@
 #include "PhysicsConstants.h"
 #include "Collision.h"
 #include "../Config/GameConfig.h"
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 SPhysics::SPhysics() : m_quadTree(0, Vec2(GameConfig::SCREEN_WIDTH/2, GameConfig::SCREEN_HEIGHT/2), Vec2(GameConfig::SCREEN_WIDTH, GameConfig::SCREEN_HEIGHT)) {};
 
@@ -25,6 +28,8 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 				{
 					Vec2 acceleration = rb->m_force / rb->m_mass;
 					rb->m_velocity += acceleration * dt;
+
+					
 				}
 
 				rb->m_force = Vec2(0.f, 0.f);
@@ -33,7 +38,7 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 			if (rb->m_bodyType != CRigidbody::BodyType::STATIC)
 			{
 				e->cTransform->m_position += rb->m_velocity * dt;
-				e->cTransform->m_angle += rb->m_angularVelocity * dt;
+				e->cTransform->m_angle += (rb->m_angularVelocity * 180.0f / M_PI) * dt;
 			}
 		}
 	}

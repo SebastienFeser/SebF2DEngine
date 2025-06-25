@@ -43,4 +43,8 @@ public:
 	static float Dot(const Vec2& a, const Vec2& b) {
 		return a.x * b.x + a.y * b.y;
 	}
+	static float Cross(const Vec2& a, const Vec2& b)
+	{
+		return a.x * b.y - a.y * b.x;
+	}
 };

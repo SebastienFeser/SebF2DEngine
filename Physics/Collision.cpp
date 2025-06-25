@@ -272,25 +272,53 @@ bool OBBvsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 
 void CollisionResponseOBBVsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, const Vec2& collisionNormal, float penetrationDepth)
 {
-	Vec2 correction = collisionNormal * (penetrationDepth * 0.5f);
-	aEntity->cTransform->m_position -= correction;
-	bEntity->cTransform->m_position += correction;
+	auto& va = aEntity->cRigidbody->m_velocity;
+	auto& vb = bEntity->cRigidbody->m_velocity;
 
-	Vec2& velA = aEntity->cRigidbody->m_velocity;
-	Vec2& velB = bEntity->cRigidbody->m_velocity;
+	auto& wa = aEntity->cRigidbody->m_angularVelocity;
+	auto& wb = bEntity->cRigidbody->m_angularVelocity;
 
-	Vec2 relativeVelocity = velB - velA;
-	float velocityAlongNormal = Vec2::Dot(relativeVelocity, collisionNormal);
+	auto ma = aEntity->cRigidbody->m_inverseMass;
+	auto mb = bEntity->cRigidbody->m_inverseMass;
 
-	if (velocityAlongNormal > 0)
+	auto ia = aEntity->cRigidbody->m_inverseInertia;
+	auto ib = bEntity->cRigidbody->m_inverseInertia;
+
+	Vec2 contactPoint = (aEntity->cTransform->m_position + bEntity->cTransform->m_position) * 0.5f;
+
+	Vec2 ra = contactPoint - aEntity->cTransform->m_position;
+	Vec2 rb = contactPoint - bEntity->cTransform->m_position;
+
+	Vec2 va_contact = va + Vec2(-ra.y, ra.x) * wa;
+	Vec2 vb_contact = vb + Vec2(-rb.y, rb.x) * wb;
+
+	Vec2 relativeVelocity = vb_contact - va_contact;
+
+	float contactVel = Vec2::Dot(relativeVelocity, collisionNormal);
+
+	if (contactVel > 0)
 		return;
 
+	float raCrossN = Vec2::Cross(ra, collisionNormal);
+	float rbCrossN = Vec2::Cross(rb, collisionNormal);
+	float invMassSum = ma + mb + (raCrossN * raCrossN) * ia + (rbCrossN * rbCrossN) * ib;
 
-	float impulseScalar = -2 * velocityAlongNormal / 2.0f;
-	Vec2 impulse = collisionNormal * impulseScalar;
+	//float e = std::min(a->cRigidBody->restitution, b->cRigidBody->restitution);
+	float j = -2 * contactVel / invMassSum;
 
-	velA -= impulse;
-	velB += impulse;
+	Vec2 impulse = collisionNormal * j;
+
+	va -= impulse * ma;
+	vb += impulse * mb;
+
+	wa -= raCrossN * j * ia;
+	wb += rbCrossN * j * ib;
+
+	const float percent = 0.8f; 
+	const float slop = 0.01f;   
+	Vec2 correction = collisionNormal * std::max(penetrationDepth - slop, 0.0f) / (ma + mb) * percent;
+	aEntity->cTransform->m_position -= correction * ma;
+	bEntity->cTransform->m_position += correction * mb;
 }
 
 void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse)
