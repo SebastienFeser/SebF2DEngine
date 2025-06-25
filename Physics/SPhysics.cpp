@@ -64,9 +64,9 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 				if (e == other) continue;
 				if (!other->cTransform || !other->cCollider) continue;
 
-				CollisionResponse collisionResponse = Collision(*e->cTransform, *e->cCollider, *other->cTransform, *other->cCollider);
+				bool isColliding = Collision(e, other);
 
-				if (collisionResponse.isColliding)
+				if (isColliding)
 				{
 					if (e->cCollisionState) e->cCollisionState->isColliding = true;
 					if (other->cCollisionState) other->cCollisionState->isColliding = true;
@@ -86,9 +86,9 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 				if (!a->cTransform || !a->cCollider) continue;
 				if (!b->cTransform || !b->cCollider) continue;
 
-				CollisionResponse collisionResponse = Collision(*a->cTransform, *a->cCollider, *b->cTransform, *b->cCollider);
+				bool isColliding = Collision(a, b);
 
-				if (collisionResponse.isColliding)
+				if (isColliding)
 				{
 					if (a->cCollisionState)
 					{
@@ -97,31 +97,6 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 					if (b->cCollisionState)
 					{
 						b->cCollisionState->isColliding = true;
-					}
-					switch (a->cCollider->m_type)
-					{
-					case ColliderType::Circle:
-						switch (b->cCollider->m_type)
-						{
-						case ColliderType::Circle:
-							CollisionResponseCircleVsCircle(a, b, collisionResponse);
-							break;
-						case ColliderType::AABB:
-							CollisionResponseCircleVsAABB(a, b, collisionResponse);
-							break;
-						}
-						break;
-					case ColliderType::AABB:
-						switch (b->cCollider->m_type)
-						{
-						case ColliderType::Circle:
-							CollisionResponseCircleVsAABB(b, a, collisionResponse);
-							break;
-						case ColliderType::AABB:
-							CollisionResponseAABBVsAABB(a, b, collisionResponse);
-							break;
-						}
-						break;
 					}
 				}
 			}

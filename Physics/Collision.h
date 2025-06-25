@@ -10,11 +10,11 @@ struct CollisionResponse
 	bool isColliding = false;
 };
 
-CollisionResponse Collision(const CTransform& aTransform, const CCollider& aCollider, const CTransform& bTransform, const CCollider& bCollider);
-CollisionResponse CircleVsCircle(const CTransform& aTransform, const CCircleCollider& aCollider, const CTransform& bTransform, const CCircleCollider& bCollider);
-CollisionResponse CircleVsAABB(const CTransform& circleTransform, const CCircleCollider& circleCollider, const CTransform& aabbTransform, const CAABBCollider& aabbCollider);
-CollisionResponse AABBVsAABB(const CTransform& aTransform, const CAABBCollider&, const CTransform& bTransform, const CAABBCollider& bCollider);
+bool Collision(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity);
+bool CircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity);
+bool CircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> AABBEntity);
+bool AABBVsAABB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity);
 
 void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse);
-void CollisionResponseCircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> rectEntity, CollisionResponse& collisionResponse);
+void CollisionResponseCircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> AABBEntity, CollisionResponse& collisionResponse);
 void CollisionResponseAABBVsAABB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse);

@@ -1,74 +1,83 @@
 #include "Collision.h"
 #include <algorithm>
 
-CollisionResponse Collision(const CTransform& aTransform, const CCollider& aCollider, const CTransform& bTransform, const CCollider& bCollider)
+bool Collision(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 {
-	CollisionResponse collisionResponse;
+	//CollisionResponse collisionResponse;
 	//Faire un Switch à la place du if
-	switch (aCollider.m_type)
+
+	auto aCollider = aEntity->cCollider;
+	auto bCollider = bEntity->cCollider;
+
+	switch (aCollider->m_type)
 	{
 	case ColliderType::Circle:
-		switch (bCollider.m_type)
+		switch (bCollider->m_type)
 		{
 		case ColliderType::Circle:
 		{
-			collisionResponse = CircleVsCircle(aTransform, static_cast<const CCircleCollider&>(aCollider), bTransform, static_cast<const CCircleCollider&>(bCollider));
-			return collisionResponse;
+			return CircleVsCircle(aEntity, bEntity);;
 		}
 		case ColliderType::AABB:
-			return CircleVsAABB(aTransform, static_cast<const CCircleCollider&>(aCollider), bTransform, static_cast<const CAABBCollider&>(bCollider));
+			return CircleVsAABB(aEntity, bEntity);
 		case ColliderType::Polygon:
-			return collisionResponse;
+			return false;
 		default:
-			return collisionResponse;
+			return false;
 		}
 	case ColliderType::AABB:
-		switch (bCollider.m_type)
+		switch (bCollider->m_type)
 		{
 		case ColliderType::Circle:
-			return CircleVsAABB(bTransform, static_cast<const CCircleCollider&>(bCollider), aTransform, static_cast<const CAABBCollider&>(aCollider));
+			return CircleVsAABB(bEntity, aEntity);
 		case ColliderType::AABB:
-			return AABBVsAABB(aTransform, static_cast<const CAABBCollider&>(aCollider), bTransform, static_cast<const CAABBCollider&>(bCollider));
-			return collisionResponse;
+			return AABBVsAABB(aEntity, bEntity);
+			return false;
 		case ColliderType::Polygon:
-			return collisionResponse;
+			return false;
 		default:
-			return collisionResponse;
+			return false;
 		}
 	case ColliderType::Polygon:
-		switch (bCollider.m_type)
+		switch (bCollider->m_type)
 		{
 		case ColliderType::Circle:
-			return collisionResponse;
+			return false;
 		case ColliderType::AABB:
-			return collisionResponse;
+			return false;
 		case ColliderType::Polygon:
-			return collisionResponse;
+			return false;
 		default:
-			return collisionResponse;
+			return false;
 		}
 	default:
-		return collisionResponse;
+		return false;
 	}
-	return collisionResponse;
+	return false;
 }
 
-CollisionResponse CircleVsCircle(const CTransform& aTransform, const CCircleCollider& aCollider, const CTransform& bTransform, const CCircleCollider& bCollider)
+bool CircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 {
+	auto aCollider = static_pointer_cast<CCircleCollider>(aEntity->cCollider);
+	auto bCollider = static_pointer_cast<CCircleCollider>(bEntity->cCollider);
+	auto aTransform = aEntity->cTransform;
+	auto bTransform = bEntity->cTransform;
+
 	CollisionResponse collisionResponse;
-	Vec2 delta = bTransform.m_position - aTransform.m_position;
+	Vec2 delta = bTransform->m_position - aTransform->m_position;
 	float distSq = delta.x * delta.x + delta.y * delta.y;
-	float rSum = aCollider.m_radius + bCollider.m_radius;
+	float rSum = aCollider->m_radius + bCollider->m_radius;
 	if (distSq <= rSum * rSum)
 	{
 		collisionResponse.isColliding = true;
 		collisionResponse.normal = delta / sqrt(distSq);
-		collisionResponse.penetration = (aCollider.m_radius + bCollider.m_radius) - sqrt(distSq);
-		return collisionResponse;
+		collisionResponse.penetration = (aCollider->m_radius + bCollider->m_radius) - sqrt(distSq);
+		CollisionResponseCircleVsCircle(aEntity, bEntity, collisionResponse);
+		return collisionResponse.isColliding;
 	}
 	else
 	{
-		return collisionResponse;
+		return collisionResponse.isColliding;
 	}
 }
 
@@ -77,16 +86,20 @@ float Clamp(float value, float min, float max)
 	return std::max(min, std::min(value, max));
 }
 
-CollisionResponse CircleVsAABB(const CTransform& circleTransform, const CCircleCollider& circleCollider,
-	const CTransform& aabbTransform, const CAABBCollider& aabbCollider)
+bool CircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> AABBEntity)
 {
+	auto circleCollider = static_pointer_cast<CCircleCollider>(circleEntity->cCollider);
+	auto aabbCollider = static_pointer_cast<CAABBCollider>(AABBEntity->cCollider);
+	auto circleTransform = circleEntity->cTransform;
+	auto aabbTransform = AABBEntity->cTransform;
+
 	CollisionResponse collisionResponse;
 	//collisionResponse.isColliding = false;
 	//collisionResponse.penetration = 0.0f;
 
-	Vec2 boxHalf = aabbCollider.m_size * 0.5f;
-	Vec2 boxCenter = aabbTransform.m_position;
-	Vec2 circleCenter = circleTransform.m_position;
+	Vec2 boxHalf = aabbCollider->m_size * 0.5f;
+	Vec2 boxCenter = aabbTransform->m_position;
+	Vec2 circleCenter = circleTransform->m_position;
 
 	float closestX = Clamp(circleCenter.x, boxCenter.x - boxHalf.x, boxCenter.x + boxHalf.x);
 	float closestY = Clamp(circleCenter.y, boxCenter.y - boxHalf.y, boxCenter.y + boxHalf.y);
@@ -95,11 +108,11 @@ CollisionResponse CircleVsAABB(const CTransform& circleTransform, const CCircleC
 	float dy = circleCenter.y - closestY;
 
 	float distSq = dx * dx + dy * dy;
-	float radiusSq = circleCollider.m_radius * circleCollider.m_radius;
+	float radiusSq = circleCollider->m_radius * circleCollider->m_radius;
 
 	if (distSq > radiusSq)
 	{
-		return collisionResponse;
+		return collisionResponse.isColliding;
 	}
 
 	float dist = std::sqrt(distSq);
@@ -107,35 +120,47 @@ CollisionResponse CircleVsAABB(const CTransform& circleTransform, const CCircleC
 
 	if (dist == 0.0f)
 	{
-		collisionResponse.penetration = circleCollider.m_radius;
+		collisionResponse.penetration = circleCollider->m_radius;
 		collisionResponse.normal = Vec2(1.0f, 0.0f);
 	}
 	else
 	{
-		collisionResponse.penetration = circleCollider.m_radius - dist;
+		collisionResponse.penetration = circleCollider->m_radius - dist;
 		collisionResponse.normal = -Vec2(dx / dist, dy / dist);
 	}
 
-	return collisionResponse;
+	CollisionResponseCircleVsAABB(circleEntity, AABBEntity, collisionResponse);
+
+	return collisionResponse.isColliding;
 
 }
 
-CollisionResponse AABBVsAABB(const CTransform& aTransform, const CAABBCollider& aCollider, const CTransform& bTransform, const CAABBCollider& bCollider)
+bool AABBVsAABB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 {
+	auto aCollider = static_pointer_cast<CAABBCollider>(aEntity->cCollider);
+	auto bCollider = static_pointer_cast<CAABBCollider>(bEntity->cCollider);
+	auto aTransform = aEntity->cTransform;
+	auto bTransform = bEntity->cTransform;
+
 	CollisionResponse collisionResponse;
 
-	Vec2 aMin = aTransform.m_position - aCollider.m_size * 0.5f;
-	Vec2 aMax = aTransform.m_position + aCollider.m_size * 0.5f;
-	Vec2 bMin = bTransform.m_position - bCollider.m_size * 0.5f;
-	Vec2 bMax = bTransform.m_position + bCollider.m_size * 0.5f;
+	Vec2 aMin = aTransform->m_position - aCollider->m_size * 0.5f;
+	Vec2 aMax = aTransform->m_position + aCollider->m_size * 0.5f;
+	Vec2 bMin = bTransform->m_position - bCollider->m_size * 0.5f;
+	Vec2 bMax = bTransform->m_position + bCollider->m_size * 0.5f;
 
 	if (aMax.x < bMin.x || aMin.x > bMax.x ||
 		aMax.y < bMin.y || aMin.y > bMax.y)
 	{
-		return collisionResponse;
+		return collisionResponse.isColliding;
 	}
 
 	collisionResponse.isColliding = true;
+
+	if (aEntity->cRigidbody->m_bodyType == CRigidbody::BodyType::KINEMATIC || bEntity->cRigidbody->m_bodyType == CRigidbody::BodyType::KINEMATIC)
+	{
+		return collisionResponse.isColliding;
+	}
 
 	float overlapX = std::min(aMax.x, bMax.x) - std::max(aMin.x, bMin.x);
 	float overlapY = std::min(aMax.y, bMax.y) - std::max(aMin.y, bMin.y);
@@ -143,15 +168,17 @@ CollisionResponse AABBVsAABB(const CTransform& aTransform, const CAABBCollider& 
 	if (overlapX < overlapY)
 	{
 		collisionResponse.penetration = overlapX;
-		collisionResponse.normal = (aTransform.m_position.x < bTransform.m_position.x) ? Vec2(1.0f, 0.0f) : Vec2(-1.0f, 0.0f);
+		collisionResponse.normal = (aTransform->m_position.x < bTransform->m_position.x) ? Vec2(1.0f, 0.0f) : Vec2(-1.0f, 0.0f);
 	}
 	else
 	{
 		collisionResponse.penetration = overlapY;
-		collisionResponse.normal = (aTransform.m_position.y < bTransform.m_position.y) ? Vec2(0.0f, 1.0f) : Vec2(0.0f, -1.0f);
+		collisionResponse.normal = (aTransform->m_position.y < bTransform->m_position.y) ? Vec2(0.0f, 1.0f) : Vec2(0.0f, -1.0f);
 	}
 
-	return collisionResponse;
+	CollisionResponseAABBVsAABB(aEntity, bEntity, collisionResponse);
+
+	return collisionResponse.isColliding;
 }
 
 void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse)
@@ -225,12 +252,12 @@ void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::share
 		posB += correction * (1.0f / massB);
 }
 
-void CollisionResponseCircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> rectEntity, CollisionResponse& collisionResponse)
+void CollisionResponseCircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> AABBEntity, CollisionResponse& collisionResponse)
 {
 	if (collisionResponse.penetration <= 0) return;
 
 	auto rbA = circleEntity->cRigidbody;
-	auto rbB = rectEntity->cRigidbody;
+	auto rbB = AABBEntity->cRigidbody;
 
 	auto typeA = rbA ? rbA->m_bodyType : CRigidbody::BodyType::STATIC;
 	auto typeB = rbB ? rbB->m_bodyType : CRigidbody::BodyType::STATIC;
@@ -275,7 +302,7 @@ void CollisionResponseCircleVsAABB(std::shared_ptr<Entity> circleEntity, std::sh
 	}
 
 	Vec2& posA = circleEntity->cTransform->m_position;
-	Vec2& posB = rectEntity->cTransform->m_position;
+	Vec2& posB = AABBEntity->cTransform->m_position;
 
 	float totalMass = (1.0f / massA) + (1.0f / massB);
 	if (totalMass == 0) return;
