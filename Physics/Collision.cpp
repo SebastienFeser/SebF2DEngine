@@ -276,7 +276,6 @@ void CollisionResponseOBBVsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<
 	aEntity->cTransform->m_position -= correction;
 	bEntity->cTransform->m_position += correction;
 
-	// --- Correction de vitesse (collision response) ---
 	Vec2& velA = aEntity->cRigidbody->m_velocity;
 	Vec2& velB = bEntity->cRigidbody->m_velocity;
 
@@ -287,7 +286,7 @@ void CollisionResponseOBBVsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<
 		return;
 
 
-	float impulseScalar = -2 * velocityAlongNormal / 2.0f; // masse égale
+	float impulseScalar = -2 * velocityAlongNormal / 2.0f;
 	Vec2 impulse = collisionNormal * impulseScalar;
 
 	velA -= impulse;
