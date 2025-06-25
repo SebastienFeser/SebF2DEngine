@@ -73,6 +73,31 @@ public:
 	}
 };
 
+class COBB : public CShape
+{
+	Vec2 m_size;
+	float m_angle;
+public:
+	COBB(const Vec2& size, const float angle): m_size(size), m_angle(angle) {};
+
+	void SetSize(const Vec2& size) { m_size = size; }
+	Vec2 GetSize() const { return m_size; }
+
+	void SetAngle(const float angle) { m_angle = angle; }
+	float GetAngle() const { return m_angle; }
+	std::unique_ptr<sf::Shape> CreateSFShape() const override {
+		auto shape = std::make_unique<sf::RectangleShape>(sf::Vector2f(m_size.x, m_size.y));
+		//shape->setPosition(sf::Vector2f(m_position.x, m_position.y));
+		shape->setFillColor(m_fillColor);
+		shape->setOutlineColor(m_outlineColor);
+		shape->setOutlineThickness(m_outlineThickness);
+		shape->setSize(sf::Vector2f(m_size.x, m_size.y));
+		shape->setRotation(sf::degrees(m_angle));
+		shape->setOrigin(sf::Vector2f(m_size.x / 2.f, m_size.y / 2.f));
+		return shape;
+	}
+};
+
 class CPolygon : public CShape
 {
 	std::vector<Vec2> m_points;

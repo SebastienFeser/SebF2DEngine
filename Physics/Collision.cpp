@@ -20,6 +20,8 @@ bool Collision(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 		}
 		case ColliderType::AABB:
 			return CircleVsAABB(aEntity, bEntity);
+		case ColliderType::OBB:
+			return false;
 		case ColliderType::Polygon:
 			return false;
 		default:
@@ -32,7 +34,22 @@ bool Collision(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 			return CircleVsAABB(bEntity, aEntity);
 		case ColliderType::AABB:
 			return AABBVsAABB(aEntity, bEntity);
+		case ColliderType::OBB:
 			return false;
+		case ColliderType::Polygon:
+			return false;
+		default:
+			return false;
+		}
+	case ColliderType::OBB:
+		switch (bCollider->m_type)
+		{
+		case ColliderType::Circle:
+			return false;
+		case ColliderType::AABB:
+			return false;
+		case ColliderType::OBB:
+			return OBBvsOBB(aEntity, bEntity);
 		case ColliderType::Polygon:
 			return false;
 		default:
@@ -44,7 +61,9 @@ bool Collision(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 		case ColliderType::Circle:
 			return false;
 		case ColliderType::AABB:
-			return false;
+			return false; 
+		case ColliderType::OBB:
+				return false;
 		case ColliderType::Polygon:
 			return false;
 		default:
@@ -179,6 +198,58 @@ bool AABBVsAABB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity
 	CollisionResponseAABBVsAABB(aEntity, bEntity, collisionResponse);
 
 	return collisionResponse.isColliding;
+}
+
+void ProjectOBB(const Vec2& center, const Vec2& halfSize, const Vec2& axis, float angle, float& min, float& max)
+{
+	Vec2 corners[4];
+	Vec2 xAxis = Vec2(std::cos(angle), std::sin(angle));
+	Vec2 yAxis = Vec2(-std::sin(angle), std::cos(angle));
+
+	corners[0] = center + xAxis * halfSize.x + yAxis * halfSize.y;
+	corners[1] = center + xAxis * halfSize.x - yAxis * halfSize.y;
+	corners[2] = center - xAxis * halfSize.x + yAxis * halfSize.y;
+	corners[3] = center - xAxis * halfSize.x - yAxis * halfSize.y;
+
+	min = max = Vec2::Dot(corners[0], axis);
+	for (int i = 1; i < 4; ++i)
+	{
+		float projection = Vec2::Dot(corners[i], axis);
+		if (projection < min) min = projection;
+		if (projection > max) max = projection;
+	}
+}
+
+bool OBBvsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
+{
+	auto aCollider = std::static_pointer_cast<COBBCollider>(aEntity->cCollider);
+	auto bCollider = std::static_pointer_cast<COBBCollider>(bEntity->cCollider);
+
+	auto aPos = aEntity->cTransform->m_position;
+	auto bPos = bEntity->cTransform->m_position;
+
+	Vec2 axes[4] = {
+		Vec2(std::cos(aCollider->m_angle), std::sin(aCollider->m_angle)),                  // axis A1
+		Vec2(-std::sin(aCollider->m_angle), std::cos(aCollider->m_angle)),                 // axis A2
+		Vec2(std::cos(bCollider->m_angle), std::sin(bCollider->m_angle)),                  // axis B1
+		Vec2(-std::sin(bCollider->m_angle), std::cos(bCollider->m_angle))                  // axis B2
+	};
+
+	for (int i = 0; i < 4; ++i)
+	{
+		float minA, maxA;
+		float minB, maxB;
+
+		ProjectOBB(aPos, aCollider->m_size/2, axes[i], aCollider->m_angle, minA, maxA);
+		ProjectOBB(bPos, bCollider->m_size/2, axes[i], bCollider->m_angle, minB, maxB);
+
+		if (maxA < minB || maxB < minA)
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse)

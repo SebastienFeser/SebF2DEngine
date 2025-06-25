@@ -14,6 +14,7 @@ bool Collision(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 bool CircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity);
 bool CircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> AABBEntity);
 bool AABBVsAABB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity);
+bool OBBvsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity);
 
 void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse);
 void CollisionResponseCircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> AABBEntity, CollisionResponse& collisionResponse);

@@ -3,7 +3,7 @@
 #include "../Maths/Vec2.h"
 #include <vector>
 
-enum class ColliderType { Circle, AABB, Polygon };
+enum class ColliderType { Circle, AABB, OBB, Polygon };
 
 class CCollider
 {
@@ -34,6 +34,14 @@ class CAABBCollider : public CCollider
 public:
 	Vec2 m_size;
 	CAABBCollider(const Vec2& size) : CCollider(ColliderType::AABB), m_size(size) {}
+};
+
+class COBBCollider : public CCollider
+{
+public:
+	Vec2 m_size;
+	float m_angle;
+	COBBCollider(const Vec2& size, float angle) : CCollider(ColliderType::OBB), m_size(size), m_angle(angle) {}
 };
 
 class CPolygonCollider : public CCollider
