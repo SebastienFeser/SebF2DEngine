@@ -235,6 +235,9 @@ bool OBBvsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 		Vec2(-std::sin(bCollider->m_angle), std::cos(bCollider->m_angle))                  // axis B2
 	};
 
+	float minPenetration = INFINITY;
+	Vec2 smallestAxis;
+
 	for (int i = 0; i < 4; ++i)
 	{
 		float minA, maxA;
@@ -247,9 +250,48 @@ bool OBBvsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 		{
 			return false;
 		}
+
+		float overlap = std::min(maxA, maxB) - std::max(minA, minB);
+		if (overlap < minPenetration)
+		{
+			minPenetration = overlap;
+			smallestAxis = axes[i];
+		}
 	}
 
+	Vec2 direction = bPos - aPos;
+	if (Vec2::Dot(direction, smallestAxis) < 0)
+	{
+		smallestAxis = -smallestAxis;
+	}
+
+	CollisionResponseOBBVsOBB(aEntity, bEntity, smallestAxis, minPenetration);
+
 	return true;
+}
+
+void CollisionResponseOBBVsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, const Vec2& collisionNormal, float penetrationDepth)
+{
+	Vec2 correction = collisionNormal * (penetrationDepth * 0.5f);
+	aEntity->cTransform->m_position -= correction;
+	bEntity->cTransform->m_position += correction;
+
+	// --- Correction de vitesse (collision response) ---
+	Vec2& velA = aEntity->cRigidbody->m_velocity;
+	Vec2& velB = bEntity->cRigidbody->m_velocity;
+
+	Vec2 relativeVelocity = velB - velA;
+	float velocityAlongNormal = Vec2::Dot(relativeVelocity, collisionNormal);
+
+	if (velocityAlongNormal > 0)
+		return;
+
+
+	float impulseScalar = -2 * velocityAlongNormal / 2.0f; // masse égale
+	Vec2 impulse = collisionNormal * impulseScalar;
+
+	velA -= impulse;
+	velB += impulse;
 }
 
 void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse)
