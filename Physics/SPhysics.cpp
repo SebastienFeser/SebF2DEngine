@@ -37,6 +37,8 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 
 			if (rb->m_bodyType != CRigidbody::BodyType::STATIC)
 			{
+				rb->m_angularVelocity *= std::pow(1.0f - rb->m_angularDrag, dt);
+
 				e->cTransform->m_position += rb->m_velocity * dt;
 				e->cTransform->m_angle += (rb->m_angularVelocity * 180.0f / M_PI) * dt;
 			}

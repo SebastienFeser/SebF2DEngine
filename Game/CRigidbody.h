@@ -15,6 +15,7 @@ public:
 	Vec2 m_velocity = { 0.f,0.f };
 	Vec2 m_force = { 0.f, 0.f };
 	float m_angularVelocity = 0.f;
+	float m_angularDrag = 0.98f;
 	float m_torque = 0.0f;
 	float m_friction = 0.1f;
 	float m_bounce = 0.3f;
