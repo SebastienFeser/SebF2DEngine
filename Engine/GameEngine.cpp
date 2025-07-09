@@ -5,6 +5,7 @@
 #include "../Scenes/SceneCollision.h"
 #include "../Scenes/SceneNoQuadTree.h"
 #include "../Scenes/SceneQuadTree.h"
+#include "../Scenes/SceneFalling.h"
 #include "../Config//GameConfig.h"
 #include <iostream>
 
@@ -41,6 +42,10 @@ void GameEngine::ChangeScene(const std::string& name)
 	else if (name == "SceneQuadTree")
 	{
 		m_currentScene = std::make_shared<SceneQuadTree>(this);
+	}
+	else if (name == "SceneFalling")
+	{
+		m_currentScene = std::make_shared<SceneFalling>(this);
 	}
 
 	m_currentScene->Init();

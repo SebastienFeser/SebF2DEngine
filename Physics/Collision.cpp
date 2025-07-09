@@ -243,8 +243,8 @@ bool OBBvsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 		float minA, maxA;
 		float minB, maxB;
 
-		ProjectOBB(aPos, aCollider->m_size/2, axes[i], aCollider->m_angle, minA, maxA);
-		ProjectOBB(bPos, bCollider->m_size/2, axes[i], bCollider->m_angle, minB, maxB);
+		ProjectOBB(aPos, aCollider->m_size/2, axes[i].Normalized(), aCollider->m_angle, minA, maxA);
+		ProjectOBB(bPos, bCollider->m_size/2, axes[i].Normalized(), bCollider->m_angle, minB, maxB);
 
 		if (maxA < minB || maxB < minA)
 		{
@@ -265,7 +265,7 @@ bool OBBvsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 		smallestAxis = -smallestAxis;
 	}
 
-	CollisionResponseOBBVsOBB(aEntity, bEntity, smallestAxis, minPenetration);
+	CollisionResponseOBBVsOBB(aEntity, bEntity, smallestAxis.Normalized(), minPenetration);
 
 	return true;
 }
@@ -283,6 +283,9 @@ void CollisionResponseOBBVsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<
 
 	auto ia = aEntity->cRigidbody->m_inverseInertia;
 	auto ib = bEntity->cRigidbody->m_inverseInertia;
+
+	auto ta = aEntity->cRigidbody->m_bodyType;
+	auto tb = bEntity->cRigidbody->m_bodyType;
 
 	Vec2 contactPoint = (aEntity->cTransform->m_position + bEntity->cTransform->m_position) * 0.5f;
 
@@ -314,11 +317,40 @@ void CollisionResponseOBBVsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<
 	wa -= raCrossN * j * ia;
 	wb += rbCrossN * j * ib;
 
+	Vec2 newRelativeVelocity = vb_contact - va_contact;
+	Vec2 tangent = (newRelativeVelocity - collisionNormal * Vec2::Dot(newRelativeVelocity, collisionNormal)).Normalized();
+
+	float jt = -Vec2::Dot(newRelativeVelocity, tangent) / invMassSum;
+
+	float mu = 0.9f; //Friction
+	Vec2 frictionImpulse;
+	if (std::abs(jt) < j * mu)
+		frictionImpulse = tangent * jt;
+	else
+		frictionImpulse = tangent * -j * mu;
+
+	va -= frictionImpulse * ma;
+	vb += frictionImpulse * mb;
+	wa -= Vec2::Cross(ra, frictionImpulse) * ia;
+	wb += Vec2::Cross(rb, frictionImpulse) * ib;
+
 	const float percent = 0.8f; 
 	const float slop = 0.01f;   
 	Vec2 correction = collisionNormal * std::max(penetrationDepth - slop, 0.0f) / (ma + mb) * percent;
-	aEntity->cTransform->m_position -= correction * ma;
-	bEntity->cTransform->m_position += correction * mb;
+	if (ta == CRigidbody::BodyType::STATIC)
+	{
+
+		bEntity->cTransform->m_position += correction;
+	}
+	else if (tb == CRigidbody::BodyType::STATIC)
+	{
+		aEntity->cTransform->m_position -= correction;
+	}
+	else
+	{
+		aEntity->cTransform->m_position -= correction * ma;
+		bEntity->cTransform->m_position += correction * mb;
+	}
 }
 
 void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse)
