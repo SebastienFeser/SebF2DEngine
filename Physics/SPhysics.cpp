@@ -22,23 +22,28 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 
 			if (rb->m_bodyType == CRigidbody::BodyType::DYNAMIC)
 			{
-				rb->m_velocity += m_gravity * dt;
+				//rb->m_velocity += m_gravity * dt;
 
-				if (rb->m_mass > 0)
+				rb->AddForce(m_gravity * rb->m_mass); // TODO: Try to optimize this
+				rb->Integrate(dt);
+				rb->GenerateAndApplyDragForce(dt);
+
+
+				/*if (rb->m_mass > 0)
 				{
-					Vec2 acceleration = rb->m_force / rb->m_mass;
-					rb->m_velocity += acceleration * dt;
+					rb->Integrate(dt);
+					//Vec2 acceleration = rb->m_force / rb->m_mass;
+					//rb->m_velocity += acceleration * dt;
 
 					
-				}
+				}*/
 
-				rb->m_force = Vec2(0.f, 0.f);
+				//rb->m_force = Vec2(0.f, 0.f);
 			}
 
 			if (rb->m_bodyType != CRigidbody::BodyType::STATIC)
 			{
 				rb->m_angularVelocity *= std::pow(1.0f - rb->m_angularDrag, dt);
-
 				e->cTransform->m_position += rb->m_velocity * dt;
 				e->cTransform->m_angle += (rb->m_angularVelocity * 180.0f / M_PI) * dt;
 			}

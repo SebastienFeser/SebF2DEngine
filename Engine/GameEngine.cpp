@@ -72,7 +72,9 @@ void GameEngine::Run()
 
 	while (m_running && m_window.isOpen())
 	{
+		//TODO: Stop the clock when paused
 		accumulatedTime += m_dt;
+		m_dt = m_clock.restart().asSeconds();
 		frameCount++;
 		if (displayClock.getElapsedTime().asSeconds() >= 0.2f && accumulatedTime != 0)
 		{
@@ -83,7 +85,6 @@ void GameEngine::Run()
 		}
 
 		fpsText.setString("FPS: " + std::to_string(fps));
-		m_dt = m_clock.restart().asSeconds();
 		ProcessEvents();
 		Update();
 		Render();
