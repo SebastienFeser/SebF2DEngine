@@ -25,7 +25,8 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 				//rb->m_velocity += m_gravity * dt;
 
 				rb->AddForce(m_gravity * rb->m_mass); // TODO: Try to optimize this
-				rb->Integrate(dt);
+				rb->IntegrateLinear(dt);
+				rb->IntegrateAngular(dt);
 				rb->GenerateAndApplyDragForce(dt);
 
 
@@ -45,7 +46,7 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 			{
 				rb->m_angularVelocity *= std::pow(1.0f - rb->m_angularDrag, dt);
 				e->cTransform->m_position += rb->m_velocity * dt;
-				e->cTransform->m_angle += (rb->m_angularVelocity * 180.0f / M_PI) * dt;
+				e->cTransform->m_angle += (rb->m_angularVelocity * 180.0f / M_PI) * dt; //TODO: Change it to rad
 			}
 		}
 	}
