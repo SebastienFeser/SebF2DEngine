@@ -4,14 +4,8 @@
 
 void Contact::ResolvePenertration()
 {
-	auto aRigidbody = aEntity->cRigidbody;
-	auto bRigidbody = aEntity->cRigidbody;
-
-	if ((aRigidbody->m_bodyType == CRigidbody::BodyType::STATIC && bRigidbody->m_bodyType == CRigidbody::BodyType::STATIC) ||
-		aRigidbody->m_bodyType == CRigidbody::BodyType::KINEMATIC || bRigidbody->m_bodyType == CRigidbody::BodyType::KINEMATIC)
-	{
-		return;
-	}
+	auto& aRigidbody = aEntity->cRigidbody;
+	auto& bRigidbody = aEntity->cRigidbody;
 
 	float aInvMass = aRigidbody->m_inverseMass;
 	float bInvMass = bRigidbody->m_inverseMass;
@@ -28,4 +22,26 @@ void Contact::ResolvePenertration()
 
 	aEntity->cTransform->m_position -= normal * da;
 	bEntity->cTransform->m_position += normal * db;
+}
+
+void Contact::ResolveCollision()
+{
+	ResolvePenertration();
+
+	auto& aRigidbody = aEntity->cRigidbody;
+	auto& bRigidbody = bEntity->cRigidbody;
+
+	float e = std::min(aRigidbody->m_bounce, bRigidbody->m_bounce);
+
+	const Vec2 vrel = (aRigidbody->m_velocity - bRigidbody->m_velocity);
+
+	float vrelDotNormal = Vec2::Dot(vrel, normal);
+
+	const Vec2 impulseDirection = normal;
+	const float impulseMagnitude = -(1 + e) * vrelDotNormal / (aRigidbody->m_inverseMass + bRigidbody->m_inverseMass);
+
+	Vec2 j = impulseDirection * impulseMagnitude;
+
+	aRigidbody->ApplyImpulse(j);
+	bRigidbody->ApplyImpulse(-j);
 }

@@ -103,4 +103,14 @@ public:
 
 		m_velocity += frictionDirection * m_friction;
 	}
+
+	void ApplyImpulse(const Vec2& j)
+	{
+		if (m_bodyType == BodyType::STATIC)
+		{
+			return;
+		}
+
+		m_velocity += j * m_inverseMass;
+	}
 };
