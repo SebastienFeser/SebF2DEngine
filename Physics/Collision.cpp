@@ -1,3 +1,4 @@
+#pragma once
 #include "Collision.h"
 #include <algorithm>
 
@@ -82,21 +83,28 @@ bool CircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEn
 	auto aTransform = aEntity->cTransform;
 	auto bTransform = bEntity->cTransform;
 
-	CollisionResponse collisionResponse;
+	//CollisionResponse collisionResponse;
+	Contact contact;
 	Vec2 delta = bTransform->m_position - aTransform->m_position;
-	float distSq = delta.x * delta.x + delta.y * delta.y;
+	float distSq = delta.SquaredLength();
 	float rSum = aCollider->m_radius + bCollider->m_radius;
 	if (distSq <= rSum * rSum)
 	{
-		collisionResponse.isColliding = true;
-		collisionResponse.normal = delta / sqrt(distSq);
-		collisionResponse.penetration = (aCollider->m_radius + bCollider->m_radius) - sqrt(distSq);
-		CollisionResponseCircleVsCircle(aEntity, bEntity, collisionResponse);
-		return collisionResponse.isColliding;
+		//collisionResponse.isColliding = true;
+		//collisionResponse.normal = delta / sqrt(distSq);
+		//collisionResponse.penetration = (aCollider->m_radius + bCollider->m_radius) - sqrt(distSq);
+		contact.aEntity = aEntity;
+		contact.bEntity = bEntity;
+		contact.normal = delta.Normalized();
+		contact.start = bTransform->m_position - contact.normal * bCollider->m_radius;
+		contact.end = aTransform->m_position + contact.normal * aCollider->m_radius;
+		contact.depth = (contact.end - contact.start).Length();
+		CollisionResponseCircleVsCircle(aEntity, bEntity, contact);
+		return true;
 	}
 	else
 	{
-		return collisionResponse.isColliding;
+		return false;
 	}
 }
 
@@ -353,9 +361,10 @@ void CollisionResponseOBBVsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<
 	}
 }
 
-void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse)
+void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, Contact& contact)
 {
-	if (collisionResponse.penetration <= 0) return;
+	contact.ResolvePenertration();
+	/*if (collisionResponse.penetration <= 0) return;
 
 	auto rbA = aEntity->cRigidbody;
 	auto rbB = bEntity->cRigidbody;
@@ -421,7 +430,7 @@ void CollisionResponseCircleVsCircle(std::shared_ptr<Entity> aEntity, std::share
 		posA -= correction * (1.0f / massA);
 
 	if (typeB == CRigidbody::BodyType::DYNAMIC)
-		posB += correction * (1.0f / massB);
+		posB += correction * (1.0f / massB);*/
 }
 
 void CollisionResponseCircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> AABBEntity, CollisionResponse& collisionResponse)
