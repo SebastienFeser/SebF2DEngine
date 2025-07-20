@@ -2,6 +2,7 @@
 
 #include "../Maths/Vec2.h"
 #include <vector>
+#include <memory>
 
 enum class ColliderType { Circle, AABB, OBB, Polygon };
 
@@ -61,10 +62,35 @@ class CPolygonCollider : public CCollider
 {
 public:
 	std::vector<Vec2> m_points;
+	float m_angle;
 	CPolygonCollider(const std::vector<Vec2>& points) : CCollider(ColliderType::Polygon), m_points(points) {}
+
 	float GetMomentOfInertia() const override
 	{
 		//TODO
 		return 0.0;
 	};
+
+	std::vector<Vec2> GetWorldPoints(std::shared_ptr<CTransform>& transform) const
+	{
+		std::vector<Vec2> worldPoints;
+		worldPoints.reserve(m_points.size());
+		for (const Vec2& p : m_points)
+		{
+			Vec2 rotated = Vec2::Rotate(p, transform->m_angle);     // Applique la rotation
+			Vec2 translated = rotated + transform->m_position;   // Applique la position
+			worldPoints.push_back(translated);
+		}
+		return worldPoints;
+	}
+
+	Vec2 EdgeAt(int index, std::shared_ptr<CTransform>& transform) const
+	{
+		const std::vector<Vec2> worldPoints = GetWorldPoints(transform);
+		int currVertex = index;
+		int nextVertex = (index + 1) % worldPoints.size();
+
+		return worldPoints[nextVertex] - worldPoints[currVertex];
+	}
+
 };

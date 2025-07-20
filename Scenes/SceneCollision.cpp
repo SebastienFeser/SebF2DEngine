@@ -44,7 +44,48 @@ void SceneCollision::Init()
 	rectangle2->cCollisionState = std::make_shared<CCollisionState>();
 	rectangle2->cRigidbody->SetMassAndInertia(1.0, collider2->GetMomentOfInertia());
 
-	auto rectangle3 = m_entityManager.AddEntity("OrientedRectangle");
+	auto polygon1 = m_entityManager.AddEntity("Polygon");
+	polygon1->cTransform = std::make_shared<CTransform>(Vec2(5, 5));
+	const std::vector<Vec2> polygonPoints = 
+	{
+		Vec2(0.0f, 0.0f),
+		Vec2(1.0f, 0.0f),
+		Vec2(0.5f, 1.0f)
+	};
+	const std::vector<Vec2> polygonPointsPixeled =
+	{
+		Vec2(0.0f * PIXELS_PER_METER, 0.0f * PIXELS_PER_METER),
+		Vec2(1.0f * PIXELS_PER_METER, 0.0f * PIXELS_PER_METER),
+		Vec2(0.5f * PIXELS_PER_METER, 1.0f * PIXELS_PER_METER)
+	};
+
+	polygon1->cShape = std::make_shared<CPolygon>(polygonPointsPixeled);
+	polygon1->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::DYNAMIC);
+	polygon1->cRigidbody->m_velocity = Vec2(-1.0f, 0);
+	polygon1->cCollider = std::make_shared<CPolygonCollider>(polygonPoints);
+	polygon1->cCollisionState = std::make_shared<CCollisionState>();
+
+	auto polygon2 = m_entityManager.AddEntity("Polygon");
+	polygon2->cTransform = std::make_shared<CTransform>(Vec2(1, 5));
+	const std::vector<Vec2> polygonPoints2 =
+	{
+		Vec2(0.0f, 0.0f),
+		Vec2(1.0f, 0.0f),
+		Vec2(0.5f, 1.0f)
+	};
+	const std::vector<Vec2> polygonPoints2Pixeled =
+	{
+		Vec2(0.0f * PIXELS_PER_METER, 0.0f * PIXELS_PER_METER),
+		Vec2(1.0f * PIXELS_PER_METER, 0.0f * PIXELS_PER_METER),
+		Vec2(0.5f * PIXELS_PER_METER, 1.0f * PIXELS_PER_METER)
+	};
+	polygon2->cShape = std::make_shared<CPolygon>(polygonPoints2Pixeled);
+	polygon2->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::DYNAMIC);
+	polygon2->cRigidbody->m_velocity = Vec2(1.0f, 0);
+	polygon2->cCollider = std::make_shared<CPolygonCollider>(polygonPoints2);
+	polygon2->cCollisionState = std::make_shared<CCollisionState>();
+
+	/*auto rectangle3 = m_entityManager.AddEntity("OrientedRectangle");
 	rectangle3->cTransform = std::make_shared<CTransform>(Vec2(5, 5));
 	rectangle3->cShape = std::make_shared<COrientedRectangle>(Vec2(0.5f * PIXELS_PER_METER, 0.5f * PIXELS_PER_METER));
 	rectangle3->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::DYNAMIC);
@@ -58,7 +99,7 @@ void SceneCollision::Init()
 	circle3->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::DYNAMIC);
 	circle3->cRigidbody->m_velocity = Vec2(1.0f, 0);
 	circle3->cCollider = std::make_shared<CCircleCollider>(0.25f);
-	circle3->cCollisionState = std::make_shared<CCollisionState>();
+	circle3->cCollisionState = std::make_shared<CCollisionState>();*/
 
 	m_physics.SetGravity(Vec2(0, 0));
 	m_physics.m_useQuadTree = false;

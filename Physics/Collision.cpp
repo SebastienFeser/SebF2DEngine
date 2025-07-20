@@ -1,6 +1,7 @@
 #pragma once
 #include "Collision.h"
 #include <algorithm>
+#include <limits>
 
 bool Collision(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 {
@@ -66,7 +67,7 @@ bool Collision(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 		case ColliderType::OBB:
 				return false;
 		case ColliderType::Polygon:
-			return false;
+			return PolygonVsPolygon(aEntity, bEntity);
 		default:
 			return false;
 		}
@@ -275,6 +276,50 @@ bool OBBvsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 
 	CollisionResponseOBBVsOBB(aEntity, bEntity, smallestAxis.Normalized(), minPenetration);
 
+	return true;
+}
+
+float FindMinSeparation(const std::shared_ptr<Entity> aEntity, const std::shared_ptr<Entity> bEntity)
+{
+	const auto& aCollider = static_pointer_cast<CPolygonCollider>(aEntity->cCollider);
+	const auto& bCollider = static_pointer_cast<CPolygonCollider>(bEntity->cCollider);
+	float separation = std::numeric_limits<float>::lowest();
+
+	std::vector<Vec2> aWorldPoints = aCollider->GetWorldPoints(aEntity->cTransform);
+	std::vector<Vec2> bWorldPoints = bCollider->GetWorldPoints(bEntity->cTransform);
+
+	for (int i = 0; i < aWorldPoints.size(); i++)
+	{
+		Vec2 va = aWorldPoints[i];
+		Vec2 normal = aCollider->EdgeAt(i, aEntity->cTransform).Normal();
+
+		float minSep = std::numeric_limits<float>::max();
+
+		for (int j = 0; j < bWorldPoints.size(); j++)
+		{
+			Vec2 vb = bWorldPoints[j];
+			minSep = std::min(minSep, Vec2::Dot((vb - va), normal));
+		}
+
+		if (minSep > separation)
+		{
+			separation = std::max(separation, minSep);
+		}
+	}
+	return separation;
+}
+
+bool PolygonVsPolygon(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
+{
+
+	if (FindMinSeparation(aEntity, bEntity) > 0)
+	{
+		return false;
+	};
+	if (FindMinSeparation(bEntity, aEntity) > 0)
+	{
+		return false;
+	};
 	return true;
 }
 

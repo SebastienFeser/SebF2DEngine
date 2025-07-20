@@ -47,4 +47,19 @@ public:
 	{
 		return a.x * b.y - a.y * b.x;
 	}
+
+	Vec2 Normal()
+	{
+		return Vec2(y, -x).Normalized();
+	}
+
+	static Vec2 Rotate(const Vec2& v, float angle)
+	{
+		float cosA = std::cos(angle);
+		float sinA = std::sin(angle);
+		return Vec2(
+			v.x * cosA - v.y * sinA,
+			v.x * sinA + v.y * cosA
+		);
+	}
 };
