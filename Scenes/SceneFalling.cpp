@@ -25,7 +25,7 @@ void SceneFalling::Init()
 	Vec2(1.0f * PIXELS_PER_METER,  0.5f * PIXELS_PER_METER),
 	Vec2(-1.0f * PIXELS_PER_METER,  0.5f * PIXELS_PER_METER)
 	};
-	rectangle1->cTransform = std::make_shared<CTransform>(Vec2(3, 1), 0.5);
+	rectangle1->cTransform = std::make_shared<CTransform>(Vec2(3, 1), 3);
 	rectangle1->cShape = std::make_shared<CPolygon>(fallingRectPointsPixeled);
 	rectangle1->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::DYNAMIC);
 	rectangle1->cRigidbody->m_velocity = Vec2(0, 0);
@@ -55,6 +55,32 @@ void SceneFalling::Init()
 	ground->cCollider = collider2;
 	ground->cCollisionState = std::make_shared<CCollisionState>();
 	ground->cRigidbody->SetMassAndInertia(100.0, collider2->GetMomentOfInertia());
+
+	const std::vector<Vec2> pentagonPoints = {
+	Vec2(0.0f,  1.0f),
+	Vec2(-0.951f,  0.309f),
+	Vec2(-0.588f, -0.809f),
+	Vec2(0.588f, -0.809f),
+	Vec2(0.951f,  0.309f)
+	};
+
+	const std::vector<Vec2> pentagonPointsPixeled = {
+		Vec2(0.0f * PIXELS_PER_METER,  1.0f * PIXELS_PER_METER),
+		Vec2(-0.951f * PIXELS_PER_METER,  0.309f * PIXELS_PER_METER),
+		Vec2(-0.588f * PIXELS_PER_METER, -0.809f * PIXELS_PER_METER),
+		Vec2(0.588f * PIXELS_PER_METER, -0.809f * PIXELS_PER_METER),
+		Vec2(0.951f * PIXELS_PER_METER,  0.309f * PIXELS_PER_METER)
+	};
+	auto pentagon = m_entityManager.AddEntity("OBB");
+	pentagon->cTransform = std::make_shared<CTransform>(Vec2(5, 1), 3); // position dans le monde
+	//pentagon->cShape = std::make_shared<CPolygon>();
+	pentagon->cShape = std::make_shared<CPolygon>(pentagonPointsPixeled);
+	pentagon->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::DYNAMIC);
+	pentagon->cRigidbody->m_velocity = Vec2(0, -1);
+	auto pentagonCollider = std::make_shared<CPolygonCollider>(pentagonPoints);
+	pentagon->cCollider = pentagonCollider;
+	pentagon->cCollisionState = std::make_shared<CCollisionState>();
+	pentagon->cRigidbody->SetMassAndInertia(1.0f, pentagonCollider->GetMomentOfInertia());
 
 	m_physics.m_useQuadTree = false;
 }
