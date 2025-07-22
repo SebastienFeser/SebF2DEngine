@@ -39,14 +39,14 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 					
 				}*/
 
-				//rb->m_force = Vec2(0.f, 0.f);
+				rb->m_force = Vec2(0.f, 0.f);
 			}
 
 			if (rb->m_bodyType != CRigidbody::BodyType::STATIC)
 			{
 				rb->m_angularVelocity *= std::pow(1.0f - rb->m_angularDrag, dt);
 				e->cTransform->m_position += rb->m_velocity * dt;
-				e->cTransform->m_angle += (rb->m_angularVelocity * 180.0f / M_PI) * dt; //TODO: Change it to rad
+				e->cTransform->m_angle += (rb->m_angularVelocity) * dt;
 			}
 		}
 	}

@@ -113,4 +113,15 @@ public:
 
 		m_velocity += j * m_inverseMass;
 	}
+
+	void ApplyImpulse(const Vec2& j, const Vec2& r)
+	{
+		if (m_bodyType == BodyType::STATIC)
+		{
+			return;
+		}
+
+		m_velocity += j * m_inverseMass;
+		m_angularVelocity += Vec2::Cross(r, j) * m_inverseInertia;
+	}
 };

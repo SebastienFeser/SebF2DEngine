@@ -279,7 +279,7 @@ bool OBBvsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 	return true;
 }
 
-float FindMinSeparation(const std::shared_ptr<Entity> aEntity, const std::shared_ptr<Entity> bEntity)
+float FindMinSeparation(const std::shared_ptr<Entity> aEntity, const std::shared_ptr<Entity> bEntity, Vec2& axis, Vec2& point)
 {
 	const auto& aCollider = static_pointer_cast<CPolygonCollider>(aEntity->cCollider);
 	const auto& bCollider = static_pointer_cast<CPolygonCollider>(bEntity->cCollider);
@@ -294,16 +294,26 @@ float FindMinSeparation(const std::shared_ptr<Entity> aEntity, const std::shared
 		Vec2 normal = aCollider->EdgeAt(i, aEntity->cTransform).Normal();
 
 		float minSep = std::numeric_limits<float>::max();
+		Vec2 minVertex;
+
 
 		for (int j = 0; j < bWorldPoints.size(); j++)
 		{
 			Vec2 vb = bWorldPoints[j];
+			float proj = Vec2::Dot((vb - va), normal);
+			if (proj < minSep)
+			{
+				minSep = proj;
+				minVertex = vb;
+			}
 			minSep = std::min(minSep, Vec2::Dot((vb - va), normal));
 		}
 
 		if (minSep > separation)
 		{
-			separation = std::max(separation, minSep);
+			separation = minSep;
+			axis = aCollider->EdgeAt(i, aEntity->cTransform);
+			point = minVertex;
 		}
 	}
 	return separation;
@@ -311,15 +321,40 @@ float FindMinSeparation(const std::shared_ptr<Entity> aEntity, const std::shared
 
 bool PolygonVsPolygon(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 {
+	Vec2 aAxis, bAxis;
+	Vec2 aPoint, bPoint;
+	Contact contact;
+	float abSeparation = FindMinSeparation(aEntity, bEntity, aAxis, aPoint);
+	if ( abSeparation >= 0)
+	{
+		return false;
+	}
+	float baSeparation = FindMinSeparation(bEntity, aEntity, bAxis, bPoint);
+	if ( baSeparation >= 0)
+	{
+		return false;
+	}
 
-	if (FindMinSeparation(aEntity, bEntity) > 0)
+	contact.aEntity = aEntity;
+	contact.bEntity = bEntity;
+
+	if (abSeparation > baSeparation)
 	{
-		return false;
-	};
-	if (FindMinSeparation(bEntity, aEntity) > 0)
+		contact.depth = -abSeparation;
+		contact.normal = aAxis.Normal();
+		contact.start = aPoint;
+		contact.end = aPoint + contact.normal * contact.depth;
+	}
+	else
 	{
-		return false;
-	};
+		contact.depth = -baSeparation;
+		contact.normal = -bAxis.Normal();
+		contact.end = bPoint;
+		contact.start = bPoint - contact.normal * contact.depth;
+	}
+
+	CollisionResponsePolygonVsPolygon(aEntity, bEntity, contact);
+
 	return true;
 }
 
@@ -613,4 +648,19 @@ void CollisionResponseAABBVsAABB(std::shared_ptr<Entity> aEntity, std::shared_pt
 
 	if (typeB == CRigidbody::BodyType::DYNAMIC)
 		posB += correction * (1.0f / massB);
+}
+
+void CollisionResponsePolygonVsPolygon(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, Contact& contact)
+{
+	auto aRigidbody = contact.aEntity->cRigidbody;
+	auto bRigidbody = contact.bEntity->cRigidbody;
+
+
+	if ((aRigidbody->m_bodyType == CRigidbody::BodyType::STATIC && bRigidbody->m_bodyType == CRigidbody::BodyType::STATIC) ||
+		aRigidbody->m_bodyType == CRigidbody::BodyType::KINEMATIC || bRigidbody->m_bodyType == CRigidbody::BodyType::KINEMATIC)
+	{
+		return;
+	}
+
+	contact.ResolveCollision();
 }
