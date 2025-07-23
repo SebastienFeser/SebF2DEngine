@@ -127,7 +127,7 @@ void SceneFalling::ProcessInput(sf::RenderWindow& m_window)
 		{
 			if (keyPressed->scancode == sf::Keyboard::Scancode::Space)
 			{
-				m_game->ChangeScene("SceneGravity");
+				m_game->ChangeScene("SceneFallingCircle");
 			}
 		}
 	}

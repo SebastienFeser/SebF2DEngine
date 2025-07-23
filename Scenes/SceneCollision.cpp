@@ -3,9 +3,14 @@
 
 void SceneCollision::Init()
 {
+	//basketballTexture.loadFromFile("../Assets/Sprites/BasketBall.png");
+	
+	//basketballSprite->setTexture(basketballTexture);
+
 	auto circle1 = m_entityManager.AddEntity("Circle");
 	circle1->cTransform = std::make_shared<CTransform>(Vec2(1, 1));
 	circle1->cShape = std::make_shared<CCircle>(0.25f * PIXELS_PER_METER);
+	circle1->cShape->SetTexture(&basketballTexture);
 	circle1->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::DYNAMIC);
 	circle1->cRigidbody->m_velocity = Vec2(1.5f, 0);
 	circle1->cRigidbody->m_bounce = 0.5f;
@@ -16,6 +21,7 @@ void SceneCollision::Init()
 	auto circle2 = m_entityManager.AddEntity("Circle");
 	circle2->cTransform = std::make_shared<CTransform>(Vec2(5, 1.1));
 	circle2->cShape = std::make_shared<CCircle>(0.25f * PIXELS_PER_METER);
+	circle2->cShape->SetTexture(&basketballTexture);
 	circle2->cRigidbody = std::make_shared<CRigidbody>(1.0f, CRigidbody::BodyType::DYNAMIC);
 	circle2->cRigidbody->m_velocity = Vec2(-1.5f, 0);
 	//circle2->cRigidbody->m_mass = 2.0f;

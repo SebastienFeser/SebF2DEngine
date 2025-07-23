@@ -20,7 +20,7 @@ public:
 	float m_torque = 0.0f;
 	float m_inertia = 0.0f;
 	float m_inverseInertia = 0.0f;
-	float m_friction = 0.1f;
+	float m_friction = 0.7f;
 	float m_bounce = 0.3f;
 	BodyType m_bodyType = BodyType::STATIC;
 

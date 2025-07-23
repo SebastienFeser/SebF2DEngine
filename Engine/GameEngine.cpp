@@ -7,6 +7,7 @@
 #include "../Scenes/SceneQuadTree.h"
 #include "../Scenes/SceneFalling.h"
 #include "../Config//GameConfig.h"
+#include "../Scenes/SceneFallingCircle.h"
 #include <iostream>
 
 GameEngine::GameEngine() : m_window(sf::VideoMode({ GameConfig::SCREEN_WIDTH, GameConfig::SCREEN_HEIGHT }), "SebF2DEngine"), m_currentFrame(0)
@@ -46,6 +47,10 @@ void GameEngine::ChangeScene(const std::string& name)
 	else if (name == "SceneFalling")
 	{
 		m_currentScene = std::make_shared<SceneFalling>(this);
+	}
+	else if (name == "SceneFallingCircle")
+	{
+		m_currentScene = std::make_shared<SceneFallingCircle>(this);
 	}
 
 	m_currentScene->Init();

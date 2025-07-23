@@ -444,7 +444,7 @@ void CollisionResponseOBBVsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<
 void CollisionResponseCircleVsCircle(Contact& contact)
 {
 	auto aRigidbody = contact.aEntity->cRigidbody;
-	auto bRigidbody = contact.aEntity->cRigidbody;
+	auto bRigidbody = contact.bEntity->cRigidbody;
 
 
 	if ((aRigidbody->m_bodyType == CRigidbody::BodyType::STATIC && bRigidbody->m_bodyType == CRigidbody::BodyType::STATIC) ||

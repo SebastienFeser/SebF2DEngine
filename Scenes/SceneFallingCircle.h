@@ -2,18 +2,18 @@
 
 #include "../Engine/Scene.h"
 
-class SceneCollision : public Scene
+class SceneFallingCircle : public Scene
 {
 private:
 	sf::Texture basketballTexture;
 	sf::Sprite* basketballSprite;
-public: 
-	SceneCollision(GameEngine* game) : Scene(game) {
+public:
+	SceneFallingCircle(GameEngine* game) : Scene(game) {
 		basketballTexture.loadFromFile("../../../Assets/Sprites/BasketBall.png");
 		basketballSprite = new sf::Sprite(basketballTexture);
 	}
 
-	~SceneCollision()
+	~SceneFallingCircle()
 	{
 		delete basketballSprite;
 	}

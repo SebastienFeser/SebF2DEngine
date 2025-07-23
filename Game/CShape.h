@@ -10,6 +10,7 @@ protected:
 	sf::Color m_fillColor = sf::Color::White;
 	sf::Color m_outlineColor = sf::Color::Black;
 	float m_outlineThickness = 0.f;
+	const sf::Texture* m_texture = nullptr;
 public:
 	virtual ~CShape() = default;
 	virtual std::unique_ptr<sf::Shape> CreateSFShape() const = 0;
@@ -18,11 +19,13 @@ public:
 	void SetFillColor(const sf::Color& fillColor) { m_fillColor = fillColor;  }
 	void SetOutlineColor(const sf::Color& outlineColor) { m_outlineColor = outlineColor; }
 	void SetOutlineThickness(float outlineThickness) { m_outlineThickness = outlineThickness; }
+	void SetTexture(const sf::Texture* texture) { m_texture = texture; }
 
 	//Vec2 GetPosition() const { return m_position; }
 	//float GetRotation() const { return m_rotation; }
 	sf::Color GetFillColor() const { return m_fillColor; }
 	sf::Color GetOutlineColor() const { return m_outlineColor; }
+	const sf::Texture* GetTexture() const { return m_texture; }
 };
 
 class CCircle : public CShape 
@@ -42,6 +45,10 @@ public:
 		auto shape = std::make_unique<sf::CircleShape>(m_radius);
 		//shape->setPosition(sf::Vector2f(m_position.x, m_position.y));
 		//shape->setRotation(sf::degrees(m_rotation));
+		if (m_texture)
+		{
+			shape->setTexture(m_texture);
+		}
 		shape->setFillColor(m_fillColor);
 		shape->setOutlineColor(m_outlineColor);
 		shape->setOutlineThickness(m_outlineThickness);

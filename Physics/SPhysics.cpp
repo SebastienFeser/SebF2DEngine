@@ -39,7 +39,7 @@ void SPhysics::Update(EntityManager& entityManager, float dt)
 					
 				}*/
 
-				rb->m_force = Vec2(0.f, 0.f);
+				//rb->m_force = Vec2(0.f, 0.f);
 			}
 
 			if (rb->m_bodyType != CRigidbody::BodyType::STATIC)
