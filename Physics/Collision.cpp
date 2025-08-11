@@ -25,7 +25,7 @@ bool Collision(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 		case ColliderType::OBB:
 			return false;
 		case ColliderType::Polygon:
-			return false;
+			return PolygonVsCircle(bEntity, aEntity);
 		default:
 			return false;
 		}
@@ -61,7 +61,7 @@ bool Collision(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity)
 		switch (bCollider->m_type)
 		{
 		case ColliderType::Circle:
-			return false;
+			return PolygonVsCircle(aEntity,bEntity);
 		case ColliderType::AABB:
 			return false; 
 		case ColliderType::OBB:
@@ -354,6 +354,126 @@ bool PolygonVsPolygon(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> b
 	}
 
 	CollisionResponsePolygonVsPolygon(aEntity, bEntity, contact);
+
+	return true;
+}
+
+bool PolygonVsCircle(std::shared_ptr<Entity> polygonEntity, std::shared_ptr<Entity> circleEntity)
+{
+	const auto& polygonCollider = static_pointer_cast<CPolygonCollider>(polygonEntity->cCollider);
+	const auto& circleCollider = static_pointer_cast<CCircleCollider>(circleEntity->cCollider);
+
+	const auto& polygonTransform = polygonEntity->cTransform;
+	const auto& circleTransform = circleEntity->cTransform;
+
+	const std::vector<Vec2>& polygonVertices = polygonCollider->GetWorldPoints(polygonEntity->cTransform);
+
+	Contact contact;
+
+	bool isOutside = false;
+	Vec2 minCurrVertex;
+	Vec2 minNextVertex;
+	float distanceCircleEdge = std::numeric_limits<float>::lowest();
+
+	for (int i = 0; i < polygonVertices.size(); i++)
+	{
+		int currVertex = i;
+		int nextVertex = (i + 1) % polygonVertices.size();
+		Vec2 edge = polygonCollider->EdgeAt(currVertex, polygonEntity->cTransform);
+		Vec2 normal = edge.Normal();
+
+		Vec2 circleCenter = circleTransform->m_position - polygonVertices[currVertex];
+
+		float projection = Vec2::Dot(circleCenter, normal);
+
+		if (projection > 0)
+		{
+			distanceCircleEdge = projection;
+			minCurrVertex = polygonVertices[currVertex];
+			minNextVertex = polygonVertices[nextVertex];
+			isOutside = true;
+			break;
+		}
+		else
+		{
+			if (projection > distanceCircleEdge)
+			{
+				distanceCircleEdge = projection;
+				minCurrVertex = polygonVertices[currVertex];
+				minNextVertex = polygonVertices[nextVertex];
+			}
+		}
+	}
+
+	if (isOutside)
+	{
+		Vec2 v1 = circleTransform->m_position - minCurrVertex;
+		Vec2 v2 = minNextVertex - minCurrVertex;
+		if (Vec2::Dot(v1, v2) < 0)
+		{
+			if (v1.Length() > circleCollider->m_radius)
+			{
+				return false;
+			}
+			else
+			{
+				contact.aEntity = polygonEntity;
+				contact.bEntity = circleEntity;
+				contact.depth = circleCollider->m_radius - v1.Length();
+				contact.normal = v1.Normalized();
+				contact.start = circleTransform->m_position + (contact.normal * circleCollider->m_radius);
+				contact.end = contact.start + (contact.normal * contact.depth);
+			}
+		}
+		else
+		{
+			v1 = circleTransform->m_position - minNextVertex;
+			v2 = minCurrVertex - minNextVertex;
+			if (Vec2::Dot(v1, v2) < 0)
+			{
+				if (v1.Length() > circleCollider->m_radius)
+				{
+					return false;
+				}
+				else
+				{
+					contact.aEntity = polygonEntity;
+					contact.bEntity = circleEntity;
+					contact.depth = circleCollider->m_radius - v1.Length();
+					contact.normal = v1.Normalized();
+					contact.start = circleTransform->m_position + (contact.normal * -circleCollider->m_radius);
+					contact.end = contact.start + (contact.normal * contact.depth);
+				}
+			}
+			else
+			{
+				if (distanceCircleEdge > circleCollider->m_radius)
+				{
+					return false;
+				}
+				else
+				{
+					contact.aEntity = polygonEntity;
+					contact.bEntity = circleEntity;
+					contact.depth = circleCollider->m_radius - distanceCircleEdge;
+					contact.normal = (minNextVertex - minCurrVertex).Normal();
+					contact.start = circleTransform->m_position - (contact.normal * circleCollider->m_radius);
+					contact.end = contact.start + (contact.normal * contact.depth);
+				}
+			}
+		}
+	}
+	else
+	{
+		contact.aEntity = polygonEntity;
+		contact.bEntity = circleEntity;
+		contact.depth = circleCollider->m_radius - distanceCircleEdge;
+		contact.normal = (minNextVertex - minCurrVertex).Normal();
+		contact.start = circleTransform->m_position - (contact.normal * circleCollider->m_radius);
+		contact.end = contact.start + (contact.normal * contact.depth);
+	}
+
+	CollisionResponsePolygonVsCircle(polygonEntity, circleEntity, contact);
 
 	return true;
 }
@@ -651,6 +771,21 @@ void CollisionResponseAABBVsAABB(std::shared_ptr<Entity> aEntity, std::shared_pt
 }
 
 void CollisionResponsePolygonVsPolygon(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, Contact& contact)
+{
+	auto aRigidbody = contact.aEntity->cRigidbody;
+	auto bRigidbody = contact.bEntity->cRigidbody;
+
+
+	if ((aRigidbody->m_bodyType == CRigidbody::BodyType::STATIC && bRigidbody->m_bodyType == CRigidbody::BodyType::STATIC) ||
+		aRigidbody->m_bodyType == CRigidbody::BodyType::KINEMATIC || bRigidbody->m_bodyType == CRigidbody::BodyType::KINEMATIC)
+	{
+		return;
+	}
+
+	contact.ResolveCollision();
+}
+
+void CollisionResponsePolygonVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, Contact& contact)
 {
 	auto aRigidbody = contact.aEntity->cRigidbody;
 	auto bRigidbody = contact.bEntity->cRigidbody;

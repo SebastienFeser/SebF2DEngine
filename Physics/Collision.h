@@ -17,9 +17,11 @@ bool CircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> 
 bool AABBVsAABB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity);
 bool OBBvsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity);
 bool PolygonVsPolygon(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity);
+bool PolygonVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity);
 
 void CollisionResponseCircleVsCircle(Contact& contact);
 void CollisionResponseCircleVsAABB(std::shared_ptr<Entity> circleEntity, std::shared_ptr<Entity> AABBEntity, CollisionResponse& collisionResponse);
 void CollisionResponseAABBVsAABB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, CollisionResponse& collisionResponse);
 void CollisionResponseOBBVsOBB(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, const Vec2& collisionNormal, float penetrationDepth);
 void CollisionResponsePolygonVsPolygon(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, Contact& contact);
+void CollisionResponsePolygonVsCircle(std::shared_ptr<Entity> aEntity, std::shared_ptr<Entity> bEntity, Contact& contact);
